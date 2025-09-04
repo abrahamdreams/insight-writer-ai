@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import ExpertComment from './ExpertComment';
 import DocumentUpload from './DocumentUpload';
 import WritingAgents from './WritingAgents';
+import CitationFinder from './CitationFinder';
 import { useState } from 'react';
 
 interface UploadedDocument {
@@ -97,6 +98,9 @@ const ExpertReview = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Citation Finder */}
+        <CitationFinder />
+        
         {/* Writing Agents */}
         <WritingAgents />
         
