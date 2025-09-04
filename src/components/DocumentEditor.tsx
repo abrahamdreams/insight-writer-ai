@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FileText, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AIGrader from './AIGrader';
+import VoiceDictation from './VoiceDictation';
 
 const DocumentEditor = () => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
@@ -21,6 +22,8 @@ Improved On-Field Performance
 
 The translation of gym gains to the soccer pitch is evident in various aspects of play. Increased strength and power allow players to accelerate more rapidly, maintain higher running speeds, and execute explosive movements such as jumping for headers or making quick directional changes. Enhanced lower body strength contributes to more powerful kicks, enabling players to strike the ball with greater force and accuracy. Additionally, improved core stability aids in balance and coordination, allowing for better ball control and more precise movements during complex soccer-specific actions.`);
 
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
   const formatOptions = [
     { icon: Bold, label: 'Bold' },
     { icon: Italic, label: 'Italic' },
@@ -29,6 +32,25 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
     { icon: AlignCenter, label: 'Align Center' },
     { icon: AlignRight, label: 'Align Right' }
   ];
+
+  const handleVoiceText = (text: string) => {
+    const textarea = contentRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + text + content.substring(end);
+      setContent(newContent);
+      
+      // Set cursor position after inserted text
+      setTimeout(() => {
+        textarea.setSelectionRange(start + text.length, start + text.length);
+        textarea.focus();
+      }, 0);
+    } else {
+      // Fallback: append to end
+      setContent(prev => prev + text);
+    }
+  };
 
   return (
     <div className="flex-1 bg-editor-bg min-h-screen">
@@ -55,6 +77,13 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                     <option.icon className="h-4 w-4" />
                   </Button>
                 ))}
+                
+                <div className="h-6 w-px bg-border mx-2" />
+                
+                <VoiceDictation 
+                  onTextReceived={handleVoiceText}
+                  isEnabled={true}
+                />
               </div>
               
               <AIGrader essayContent={content} />
@@ -73,6 +102,7 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
 
             {/* Content */}
             <textarea
+              ref={contentRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide"
