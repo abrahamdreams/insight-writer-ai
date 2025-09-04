@@ -13,14 +13,12 @@ interface DocumentEditorRef {
   getCursorPosition: () => number;
   insertText: (text: string) => void;
   insertWithHighlight: (text: string) => void;
-  focusAtPosition: (position: number) => void;
 }
 
 const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(({ onContentChange }, ref) => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showHighlight, setShowHighlight] = useState(false);
-  const [highlightPosition, setHighlightPosition] = useState({ start: 0, end: 0 });
   const [content, setContent] = useState(`Introduction
 
 Soccer is a sport that necessitates a unique amalgamation of endurance, speed, agility, and strength. As the game has evolved, training methodologies have similarly advanced, with weightlifting emerging as an increasingly integral component in the development of elite soccer athletes. This essay examines the effects of weightlifting on performance athletes in soccer, analyzing its impact on physical capabilities, injury prevention, and on-field performance.
@@ -103,10 +101,9 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       setCursorPosition(start + text.length);
       onContentChange?.(newContent, start + text.length);
       
-      // Show highlight effect for inserted text
-      setHighlightPosition({ start, end: start + text.length });
+      // Show highlight effect
       setShowHighlight(true);
-      setTimeout(() => setShowHighlight(false), 2000);
+      setTimeout(() => setShowHighlight(false), 1500);
       
       setTimeout(() => {
         textarea.setSelectionRange(start + text.length, start + text.length);
@@ -115,39 +112,11 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
     }
   };
 
-  const handleFocusAtPosition = (position: number) => {
-    const textarea = contentRef.current;
-    if (textarea) {
-      // Focus the textarea and set cursor position
-      textarea.focus();
-      textarea.setSelectionRange(position, position);
-      setCursorPosition(position);
-      
-      // Highlight area around the position (±50characters for context)
-      const contextStart = Math.max(0, position - 50);
-      const contextEnd = Math.min(content.length, position + 50);
-      setHighlightPosition({ start: contextStart, end: contextEnd });
-      setShowHighlight(true);
-      
-      // Remove highlight after 3 seconds
-      setTimeout(() => setShowHighlight(false), 3000);
-      
-      // Scroll to position - improved scrolling logic
-      const lines = content.substring(0, position).split('\n').length;
-      const lineHeight = 28; // More accurate line height
-      const scrollTop = Math.max(0, (lines - 5) * lineHeight); // Show 5 lines above for context
-      textarea.scrollTop = scrollTop;
-      
-      console.log(`Highlighted position ${position}, context: ${contextStart}-${contextEnd}, lines: ${lines}`);
-    }
-  };
-
   useImperativeHandle(ref, () => ({
     getContent: () => content,
     getCursorPosition: () => cursorPosition,
     insertText: handleInsertText,
-    insertWithHighlight: handleInsertWithHighlight,
-    focusAtPosition: handleFocusAtPosition
+    insertWithHighlight: handleInsertWithHighlight
   }));
 
   useEffect(() => {
@@ -213,21 +182,11 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                 setCursorPosition(newCursorPosition);
                 onContentChange?.(content, newCursorPosition);
               }}
-              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-500 ${
-                showHighlight ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
+              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
+                showHighlight ? 'bg-highlight-bg/30' : ''
               }`}
               placeholder="Start writing your document..."
-              style={{ 
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                background: showHighlight ? 
-                  `linear-gradient(to right, 
-                    transparent 0%, 
-                    transparent ${Math.max(0, (highlightPosition.start / Math.max(content.length, 1)) * 100)}%, 
-                    rgba(59, 130, 246, 0.15) ${Math.max(0, (highlightPosition.start / Math.max(content.length, 1)) * 100)}%, 
-                    rgba(59, 130, 246, 0.15) ${Math.min(100, (highlightPosition.end / Math.max(content.length, 1)) * 100)}%, 
-                    transparent ${Math.min(100, (highlightPosition.end / Math.max(content.length, 1)) * 100)}%, 
-                    transparent 100%)` : 'transparent'
-              }}
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             />
           </div>
         </div>

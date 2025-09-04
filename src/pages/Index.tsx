@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Header from '@/components/Header';
-import InteractiveEditor from '@/components/InteractiveEditor';
+import DocumentEditor from '@/components/DocumentEditor';
 import ExpertReview from '@/components/ExpertReview';
 import ReaderReactions from '@/components/ReaderReactions';
 import { FreemiumProvider } from '@/hooks/useFreemiumLimits';
@@ -16,8 +16,7 @@ const Index = () => {
   const [paywallTrigger, setPaywallTrigger] = useState<'ai-limit' | 'document-limit'>('ai-limit');
   const [showPricing, setShowPricing] = useState(false);
   const [showReaderReactions, setShowReaderReactions] = useState(false);
-  const [liveSuggestions, setLiveSuggestions] = useState<any[]>([]);
-  const documentEditorRef = useRef<any>(null);
+  const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
 
   const handleInsertText = (text: string) => {
     if (documentEditorRef.current) {
@@ -33,24 +32,6 @@ const Index = () => {
   const handlePaywallTrigger = (trigger: 'ai-limit' | 'document-limit') => {
     setPaywallTrigger(trigger);
     setShowPaywall(true);
-  };
-
-  const handleAcceptSuggestion = (suggestionId: string, text: string) => {
-    if (documentEditorRef.current) {
-      documentEditorRef.current.acceptSuggestion(suggestionId, text);
-    }
-  };
-
-  const handleRejectSuggestion = (suggestionId: string) => {
-    if (documentEditorRef.current) {
-      documentEditorRef.current.rejectSuggestion(suggestionId);
-    }
-  };
-
-  const handlePreviewSuggestion = (position: number) => {
-    if (documentEditorRef.current) {
-      documentEditorRef.current.previewSuggestion(position);
-    }
   };
 
   const handleUpgrade = () => {
@@ -70,10 +51,9 @@ const Index = () => {
         />
         
         <div className="flex flex-1 relative">
-          <InteractiveEditor 
+          <DocumentEditor 
             ref={documentEditorRef}
             onContentChange={handleContentChange}
-            onSuggestionsChange={setLiveSuggestions}
           />
           <ExpertReview 
             contentProps={{
@@ -86,10 +66,6 @@ const Index = () => {
             uploadedDocuments={uploadedDocuments}
             onDocumentsChange={setUploadedDocuments}
             onPaywallTrigger={handlePaywallTrigger}
-            liveSuggestions={liveSuggestions}
-            onAcceptSuggestion={handleAcceptSuggestion}
-            onRejectSuggestion={handleRejectSuggestion}
-            onPreviewSuggestion={handlePreviewSuggestion}
           />
           
           {/* Reader Reactions - Slide in from right */}

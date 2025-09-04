@@ -1,8 +1,11 @@
-import { Brain, ChevronRight, Users, Lightbulb, CheckCircle, X, Zap } from 'lucide-react';
+import { Brain, ChevronRight, Users, Lightbulb, ChevronDown, FileText, Sparkles, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ExpertComment from './ExpertComment';
+import WritingAgents from './WritingAgents';
+import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
 import ExpertReviewDocumentUpload from './ExpertReviewDocumentUpload';
 import UsageCounter from './UsageCounter';
@@ -17,16 +20,6 @@ interface UploadedDocument {
   uploadedAt: Date;
 }
 
-interface LiveSuggestion {
-  id: string;
-  type: 'expert' | 'citation' | 'improvement';
-  expert?: string;
-  text: string;
-  suggestion: string;
-  position: number;
-  confidence: number;
-}
-
 interface ExpertReviewProps {
   contentProps?: {
     content?: string;
@@ -38,22 +31,12 @@ interface ExpertReviewProps {
   uploadedDocuments?: any[];
   onDocumentsChange?: (documents: any[]) => void;
   onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
-  liveSuggestions?: LiveSuggestion[];
-  onAcceptSuggestion?: (suggestionId: string, text: string) => void;
-  onRejectSuggestion?: (suggestionId: string) => void;
-  onPreviewSuggestion?: (position: number) => void;
 }
 
-const ExpertReview = ({ 
-  contentProps, 
-  uploadedDocuments = [], 
-  onDocumentsChange = () => {}, 
-  onPaywallTrigger,
-  liveSuggestions = [],
-  onAcceptSuggestion,
-  onRejectSuggestion,
-  onPreviewSuggestion
-}: ExpertReviewProps) => {
+const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange = () => {}, onPaywallTrigger }: ExpertReviewProps) => {
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(true);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
   const getContextualComments = () => {
     const baseComments = [
@@ -111,33 +94,24 @@ const ExpertReview = ({
   ];
 
   return (
-    <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-screen shadow-lg">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Brain className="h-6 w-6 text-blue-600" />
+    <div className="w-80 bg-sidebar-bg border-l border-border flex flex-col h-screen shadow-[var(--sidebar-shadow)]">
+      {/* Compact Header */}
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-expert-accent/10 rounded-md">
+              <Brain className="h-4 w-4 text-expert-accent" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Expert Review</h2>
-              <p className="text-sm text-gray-600">AI-powered academic feedback</p>
+              <h2 className="text-lg font-semibold">Expert Review</h2>
+              <p className="text-xs text-muted-foreground">AI-powered feedback</p>
             </div>
           </div>
-          
-          <div className="flex flex-col items-end gap-2">
-            <UsageCounter onUpgradeClick={onPaywallTrigger ? () => onPaywallTrigger('ai-limit') : () => {}} />
-          </div>
+          <UsageCounter onUpgradeClick={onPaywallTrigger ? () => onPaywallTrigger('ai-limit') : () => {}} />
         </div>
-        
-        <Button className="w-full justify-between" variant="outline">
-          <Users className="h-4 w-4" />
-          Choose experts
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
 
-      {/* Document Upload */}
+      {/* Document Upload - Always visible but compact */}
       <ExpertReviewDocumentUpload 
         documents={uploadedDocuments}
         onDocumentsChange={onDocumentsChange}
@@ -145,117 +119,106 @@ const ExpertReview = ({
       />
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto bg-white">
-        {/* Live Suggestions */}
-        {liveSuggestions && liveSuggestions.length > 0 && (
-          <div className="p-4 border-b border-gray-200 bg-white">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="h-4 w-4 text-blue-600" />
-              <h3 className="font-medium text-sm text-gray-900">Live Suggestions</h3>
-              <Badge variant="secondary" className="text-xs">{liveSuggestions.length}</Badge>
-            </div>
-            <div className="space-y-3">
-              {liveSuggestions.slice(0, 3).map((suggestion) => (
-                <div 
-                  key={suggestion.id} 
-                  className="bg-gray-50 rounded-lg p-3 space-y-2 cursor-pointer hover:bg-gray-100 transition-colors border-l-4 border-transparent hover:border-blue-500"
-                  onMouseEnter={() => onPreviewSuggestion?.(suggestion.position)}
-                  onClick={() => onAcceptSuggestion?.(suggestion.id, suggestion.text)}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <Badge variant="outline" className="text-xs">{suggestion.expert || 'AI'}</Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {Math.round(suggestion.confidence * 100)}%
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {suggestion.suggestion}
-                  </p>
-                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAcceptSuggestion?.(suggestion.id, suggestion.text);
-                      }}
-                      className="h-6 text-xs px-2 bg-blue-600 hover:bg-blue-700"
-                    >
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Insert
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRejectSuggestion?.(suggestion.id);
-                      }}
-                      className="h-6 text-xs px-2"
-                    >
-                      <X className="h-3 w-3" />
-                      Dismiss
-                    </Button>
-                  </div>
-                  <div className="text-xs text-blue-600 font-medium">
-                    💡 Hover to preview • Click to insert: "{suggestion.text.substring(0, 50)}..."
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="flex-1 overflow-y-auto">
+        {/* Live Suggestions - Always visible when content exists */}
+        {contentProps?.content && (
+          <div className="p-3 border-b border-border">
+            <ProactiveAssistant 
+              content={contentProps.content}
+              cursorPosition={contentProps.cursorPosition || 0}
+              onInsertText={contentProps.onInsertText}
+              onInsertWithHighlight={contentProps.onInsertWithHighlight}
+              onPaywallTrigger={contentProps.onPaywallTrigger}
+            />
           </div>
         )}
 
-        {/* Always show some content for testing */}
-        <div className="p-6 border-b border-gray-200 bg-white">
-          <Card className="p-4 bg-blue-50 border-blue-200">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-blue-100 rounded-full">
-                <Brain className="h-4 w-4 text-blue-600" />
+        {/* AI Tools - Collapsible */}
+        <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-3 h-auto border-b border-border rounded-none">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-sm font-medium">AI Tools</span>
               </div>
-              <div>
-                <p className="text-sm font-medium text-blue-800 mb-2">Overall Assessment</p>
-                <p className="text-sm leading-relaxed text-gray-700">
-                  Your essay demonstrates strong academic structure with clear connections between weightlifting and soccer performance. 
-                  Consider adding quantitative data and specific training protocols to enhance credibility.
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CitationFinder />
+            <WritingAgents />
+          </CollapsibleContent>
+        </Collapsible>
 
-        {/* Static expert comments for testing */}
-        <div className="p-6 bg-white">
-          <h3 className="font-medium mb-4 flex items-center gap-2 text-gray-900">
-            <Users className="h-4 w-4" />
-            Expert Suggestions
-          </h3>
-          <div className="space-y-3">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  SP
-                </div>
-                <span className="text-sm font-medium text-gray-900">Steven Pinker</span>
+        {/* Expert Feedback - Collapsible */}
+        <Collapsible open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-3 h-auto border-b border-border rounded-none">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-medium">Expert Feedback</span>
               </div>
-              <p className="text-xs text-gray-600">
-                Consider adding concrete data and vivid examples to strengthen your arguments.
-              </p>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  MB
+              <ChevronDown className={`h-4 w-4 transition-transform ${feedbackOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            {/* Overall Assessment - Compact */}
+            <div className="p-3 border-b border-border">
+              <Card className="p-3 bg-suggestion-bg border-accent/20">
+                <div className="flex items-start gap-2">
+                  <div className="p-1.5 bg-accent/10 rounded-full">
+                    <Brain className="h-3 w-3 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-accent mb-1">Overall Assessment</p>
+                    <p className="text-xs leading-relaxed">
+                      Strong academic structure. 
+                      {uploadedDocuments.length > 0 && " Based on uploads, "}
+                      Add quantitative data for credibility.
+                    </p>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900">Mike Boyle</span>
-              </div>
-              <p className="text-xs text-gray-600">
-                Add specific percentages of improvement in performance metrics.
-              </p>
+              </Card>
             </div>
-          </div>
-        </div>
+
+            {/* Expert Comments - Compact */}
+            <div className="p-3">
+              <div className="space-y-2">
+                {expertComments.slice(0, 2).map((comment, index) => (
+                  <ExpertComment key={index} {...comment} />
+                ))}
+              </div>
+              {expertComments.length > 2 && (
+                <Button variant="ghost" size="sm" className="w-full mt-2 text-xs">
+                  View {expertComments.length - 2} more experts
+                </Button>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* All Suggestions - Collapsible */}
+        <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-3 h-auto rounded-none">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4" />
+                <span className="text-sm font-medium">All Suggestions</span>
+                <Badge variant="secondary" className="text-xs">{suggestions.length}</Badge>
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${suggestionsOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="p-3 space-y-1">
+              {suggestions.map((suggestion, index) => (
+                <div key={index} className="p-2 bg-muted/50 rounded text-xs hover:bg-muted transition-colors cursor-pointer">
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
