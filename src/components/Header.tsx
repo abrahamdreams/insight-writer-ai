@@ -1,13 +1,15 @@
-import { FileText, Share, MoreHorizontal, Star, MessageSquare, DollarSign } from 'lucide-react';
+import { FileText, Share, MoreHorizontal, Star, MessageSquare, DollarSign, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   documents?: any[];
   onDocumentsChange?: (documents: any[]) => void;
   onPricingClick?: () => void;
+  onReaderReactionsClick?: () => void;
+  showReaderReactions?: boolean;
 }
 
-const Header = ({ documents = [], onDocumentsChange = () => {}, onPricingClick }: HeaderProps) => {
+const Header = ({ documents = [], onDocumentsChange = () => {}, onPricingClick, onReaderReactionsClick, showReaderReactions }: HeaderProps) => {
   return (
     <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
       {/* Left side - Document info */}
@@ -20,6 +22,15 @@ const Header = ({ documents = [], onDocumentsChange = () => {}, onPricingClick }
 
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
+        <Button 
+          variant={showReaderReactions ? "default" : "ghost"} 
+          size="sm" 
+          className="gap-2" 
+          onClick={onReaderReactionsClick}
+        >
+          <MessageCircle className="h-4 w-4" />
+          Reader Reactions
+        </Button>
         <Button variant="ghost" size="sm" className="gap-2" onClick={onPricingClick}>
           <DollarSign className="h-4 w-4" />
           Pricing

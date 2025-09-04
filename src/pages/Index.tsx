@@ -15,6 +15,7 @@ const Index = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallTrigger, setPaywallTrigger] = useState<'ai-limit' | 'document-limit'>('ai-limit');
   const [showPricing, setShowPricing] = useState(false);
+  const [showReaderReactions, setShowReaderReactions] = useState(false);
   const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
 
   const handleInsertText = (text: string) => {
@@ -45,6 +46,8 @@ const Index = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <Header 
           onPricingClick={() => setShowPricing(true)}
+          onReaderReactionsClick={() => setShowReaderReactions(!showReaderReactions)}
+          showReaderReactions={showReaderReactions}
         />
         
         {/* Usage Counter */}
@@ -54,7 +57,7 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="flex flex-1">
+        <div className="flex flex-1 relative">
           <DocumentEditor 
             ref={documentEditorRef}
             onContentChange={handleContentChange}
@@ -71,7 +74,15 @@ const Index = () => {
             onDocumentsChange={setUploadedDocuments}
             onPaywallTrigger={handlePaywallTrigger}
           />
-          <ReaderReactions />
+          
+          {/* Reader Reactions - Slide in from right */}
+          <div className={`transition-all duration-300 ease-in-out ${
+            showReaderReactions 
+              ? 'translate-x-0 opacity-100' 
+              : 'translate-x-full opacity-0 pointer-events-none'
+          } absolute right-0 top-0 h-full z-10 bg-background border-l border-border shadow-lg`}>
+            <ReaderReactions onClose={() => setShowReaderReactions(false)} />
+          </div>
         </div>
 
         {/* Modals */}

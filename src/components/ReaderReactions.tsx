@@ -1,6 +1,7 @@
-import { MessageSquare, HelpCircle, AlertTriangle, Target, Book, Users } from 'lucide-react';
+import { MessageSquare, HelpCircle, AlertTriangle, Target, Book, Users, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Reaction {
   id: string;
@@ -11,7 +12,11 @@ interface Reaction {
   category: 'evidence' | 'counterarguments' | 'specificity' | 'implementation' | 'integration';
 }
 
-const ReaderReactions = () => {
+interface ReaderReactionsProps {
+  onClose?: () => void;
+}
+
+const ReaderReactions = ({ onClose }: ReaderReactionsProps) => {
   const reactions: Reaction[] = [
     {
       id: '1',
@@ -73,18 +78,25 @@ const ReaderReactions = () => {
   };
 
   return (
-    <Card className="w-80 bg-card border-border h-full">
+    <Card className="w-80 bg-card border-border h-full flex flex-col">
       <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-2 mb-2">
-          <MessageSquare className="h-5 w-5 text-accent" />
-          <h3 className="font-semibold text-lg">Reader Reactions</h3>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-accent" />
+            <h3 className="font-semibold text-lg">Reader Reactions</h3>
+          </div>
+          {onClose && (
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
           Anticipated questions and feedback from academic readers
         </p>
       </div>
 
-      <div className="p-4 space-y-3 overflow-y-auto">
+      <div className="p-4 space-y-3 overflow-y-auto flex-1">
         {reactions.map((reaction) => {
           const Icon = reaction.icon;
           return (
