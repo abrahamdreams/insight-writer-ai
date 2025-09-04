@@ -7,6 +7,7 @@ import ReaderReactions from '@/components/ReaderReactions';
 const Index = () => {
   const [documentContent, setDocumentContent] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
 
   const handleInsertText = (text: string) => {
@@ -22,7 +23,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      <Header 
+        documents={uploadedDocuments}
+        onDocumentsChange={setUploadedDocuments}
+      />
       <div className="flex flex-1">
         <DocumentEditor 
           ref={documentEditorRef}
@@ -35,6 +39,7 @@ const Index = () => {
             onInsertText: handleInsertText,
             onInsertWithHighlight: documentEditorRef.current?.insertWithHighlight
           }}
+          uploadedDocuments={uploadedDocuments}
         />
         <ReaderReactions />
       </div>

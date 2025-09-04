@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ExpertComment from './ExpertComment';
-import DocumentUpload from './DocumentUpload';
 import WritingAgents from './WritingAgents';
 import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
@@ -25,10 +24,10 @@ interface ExpertReviewProps {
     onInsertText?: (text: string) => void;
     onInsertWithHighlight?: (text: string) => void;
   };
+  uploadedDocuments?: any[];
 }
 
-const ExpertReview = ({ contentProps }: ExpertReviewProps) => {
-  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+const ExpertReview = ({ contentProps, uploadedDocuments = [] }: ExpertReviewProps) => {
 
   const getContextualComments = () => {
     const baseComments = [
@@ -119,16 +118,12 @@ const ExpertReview = ({ contentProps }: ExpertReviewProps) => {
             />
           </div>
         )}
-        
         {/* Citation Finder */}
         <CitationFinder />
         
         {/* Writing Agents */}
         <WritingAgents />
         
-        {/* Document Upload */}
-        <DocumentUpload onDocumentsChange={setUploadedDocuments} />
-
         {/* Main Feedback */}
         <div className="p-6 border-b border-border">
           <Card className="p-4 bg-suggestion-bg border-accent/20">
