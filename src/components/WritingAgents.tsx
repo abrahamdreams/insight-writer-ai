@@ -207,41 +207,40 @@ const WritingAgents = () => {
   };
 
   return (
-    <div className="p-6 border-b border-border">
-      <h3 className="font-medium mb-4 flex items-center gap-2">
-        <Brain className="h-4 w-4" />
+    <div className="p-4 border-b border-border">
+      <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+        <Brain className="h-3 w-3" />
         Writing Assistants
       </h3>
       
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-3">
         {agents.map((agent) => (
           <Card 
             key={agent.id}
-            className={`p-3 cursor-pointer transition-all border ${
+            className={`p-2 cursor-pointer transition-all border ${
               selectedAgent === agent.id 
-                ? 'ring-2 ring-accent shadow-md' 
+                ? 'ring-1 ring-accent shadow-sm' 
                 : 'hover:shadow-sm'
             }`}
             onClick={() => setSelectedAgent(selectedAgent === agent.id ? null : agent.id)}
           >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <agent.icon className={`h-4 w-4 ${agent.color}`} />
-                <span className="text-sm font-medium">{agent.name}</span>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <agent.icon className={`h-3 w-3 ${agent.color}`} />
+                <span className="text-xs font-medium truncate">{agent.name}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs font-semibold">{agent.score}</span>
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs px-1 py-0 h-5 ${getStatusColor(agent.status)}`}
-                >
-                  {getStatusIcon(agent.status)}
-                </Badge>
+                <div className={`w-2 h-2 rounded-full ${
+                  agent.status === 'excellent' ? 'bg-green-500' :
+                  agent.status === 'good' ? 'bg-blue-500' :
+                  agent.status === 'needs-work' ? 'bg-orange-500' : 'bg-red-500'
+                }`} />
               </div>
             </div>
             <Progress 
               value={agent.score} 
-              className="h-1.5" 
+              className="h-1" 
             />
           </Card>
         ))}
@@ -249,40 +248,33 @@ const WritingAgents = () => {
 
       {/* Detailed View */}
       {selectedAgent && (
-        <Card className="p-4 bg-muted/30">
+        <Card className="p-3 bg-muted/30 mb-3">
           {(() => {
             const agent = agents.find(a => a.id === selectedAgent);
             if (!agent) return null;
             
             return (
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <agent.icon className={`h-5 w-5 ${agent.color}`} />
-                    <h4 className="font-semibold">{agent.name}</h4>
-                    <Badge 
-                      variant="outline" 
-                      className={`${getStatusColor(agent.status)}`}
-                    >
-                      {getStatusIcon(agent.status)}
-                      {agent.status.replace('-', ' ')}
-                    </Badge>
+                    <agent.icon className={`h-4 w-4 ${agent.color}`} />
+                    <h4 className="text-sm font-semibold">{agent.name}</h4>
                   </div>
-                  <div className="text-lg font-bold">
+                  <div className="text-sm font-bold">
                     {agent.score}/{agent.maxScore}
                   </div>
                 </div>
                 
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-xs text-muted-foreground mb-2">
                   {agent.description}
                 </p>
                 
                 <div>
-                  <h5 className="text-sm font-medium mb-2">Suggestions:</h5>
+                  <h5 className="text-xs font-medium mb-1">Top suggestions:</h5>
                   <ul className="space-y-1">
-                    {agent.suggestions.map((suggestion, index) => (
-                      <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <div className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0" />
+                    {agent.suggestions.slice(0, 2).map((suggestion, index) => (
+                      <li key={index} className="text-xs text-muted-foreground flex items-start gap-1">
+                        <div className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0" />
                         {suggestion}
                       </li>
                     ))}
@@ -295,17 +287,17 @@ const WritingAgents = () => {
       )}
       
       {/* Overall Score */}
-      <Card className="p-4 mt-4 bg-accent/5 border-accent/20">
+      <Card className="p-3 bg-accent/5 border-accent/20">
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="font-semibold text-accent">Overall Writing Score</h4>
-            <p className="text-sm text-muted-foreground">Based on all writing assistants</p>
+            <h4 className="text-sm font-semibold text-accent">Overall Score</h4>
+            <p className="text-xs text-muted-foreground">All assistants</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-xl font-bold text-accent">
               {Math.round(agents.reduce((sum, agent) => sum + agent.score, 0) / agents.length)}
             </div>
-            <p className="text-xs text-muted-foreground">out of 100</p>
+            <p className="text-xs text-muted-foreground">/ 100</p>
           </div>
         </div>
       </Card>
