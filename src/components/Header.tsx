@@ -39,10 +39,6 @@ const Header = ({ documents = [], onDocumentsChange = () => {}, onPricingClick, 
           <Star className="h-4 w-4" />
           Get Pro
         </Button>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <MessageSquare className="h-4 w-4" />
-          Feedback
-        </Button>
         <Button variant="ghost" size="sm">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
