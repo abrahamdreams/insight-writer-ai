@@ -215,35 +215,51 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
                   onMouseEnter={() => {
                     if (suggestion.type === 'expansion' && suggestion.id === 'expansion-powerlifting') {
                       // Find where "powerlifting" or similar terms appear in the content
-                      const searchTerms = ['powerlifting', 'weightlifting', 'strength training'];
+                      const searchTerms = ['powerlifting', 'weightlifting', 'strength training', 'training methodologies'];
                       for (const term of searchTerms) {
-                        const index = content.toLowerCase().indexOf(term);
+                        const index = content.toLowerCase().indexOf(term.toLowerCase());
                         if (index !== -1) {
                           onPreviewHighlight?.(index, index + term.length);
                           break;
                         }
                       }
                     } else if (suggestion.type === 'citation') {
-                      // Highlight the sentence that needs citation
+                      // Highlight sentences that need citations - look for claims without sources
                       const sentences = content.split(/[.!?]+/);
                       let charCount = 0;
                       for (const sentence of sentences) {
-                        if (sentence.toLowerCase().includes('studies show') || 
-                            sentence.toLowerCase().includes('research indicates') ||
-                            sentence.toLowerCase().includes('significantly')) {
+                        const lowerSentence = sentence.toLowerCase();
+                        if ((lowerSentence.includes('studies show') || 
+                            lowerSentence.includes('research indicates') ||
+                            lowerSentence.includes('significantly') ||
+                            lowerSentence.includes('improves') ||
+                            lowerSentence.includes('increases') ||
+                            lowerSentence.includes('reduces')) &&
+                            !lowerSentence.includes('(') && 
+                            !lowerSentence.includes('et al')) {
                           onPreviewHighlight?.(charCount, charCount + sentence.length);
                           break;
                         }
                         charCount += sentence.length + 1;
                       }
                     } else if (suggestion.type === 'clarification') {
-                      // Highlight vague terms
-                      const vageTerms = ['many', 'most', 'some', 'often', 'usually'];
+                      // Highlight vague terms that need to be more specific
+                      const vageTerms = ['many', 'most', 'some', 'often', 'usually', 'various', 'numerous', 'several'];
                       for (const term of vageTerms) {
-                        const index = content.toLowerCase().indexOf(term);
-                        if (index !== -1) {
-                          onPreviewHighlight?.(index, index + term.length);
+                        const regex = new RegExp(`\\b${term}\\b`, 'i');
+                        const match = content.match(regex);
+                        if (match && match.index !== undefined) {
+                          onPreviewHighlight?.(match.index, match.index + term.length);
                           break;
+                        }
+                      }
+                    } else if (suggestion.type === 'improvement') {
+                      // Highlight areas that could be improved
+                      if (suggestion.id === 'intro-hook') {
+                        // Highlight the first sentence/paragraph
+                        const firstParagraph = content.split('\n\n')[0];
+                        if (firstParagraph) {
+                          onPreviewHighlight?.(0, Math.min(firstParagraph.length, 100));
                         }
                       }
                     }

@@ -114,10 +114,28 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
   };
 
   const handlePreviewHighlight = (start: number, end: number) => {
-    setPreviewHighlight({start, end});
+    const textarea = contentRef.current;
+    if (textarea) {
+      // Actually select the text to highlight it visually
+      textarea.focus();
+      textarea.setSelectionRange(start, end);
+      
+      // Also set our state for any additional visual effects
+      setPreviewHighlight({start, end});
+      
+      // Clear selection after a short delay
+      setTimeout(() => {
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+      }, 1500);
+    }
   };
 
   const handleClearPreview = () => {
+    const textarea = contentRef.current;
+    if (textarea && previewHighlight) {
+      // Return cursor to original position
+      textarea.setSelectionRange(cursorPosition, cursorPosition);
+    }
     setPreviewHighlight(null);
   };
 
@@ -183,38 +201,24 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
               placeholder="Document title..."
             />
 
-            {/* Content with overlay for highlighting */}
-            <div className="relative">
-              <textarea
-                ref={contentRef}
-                value={content}
-                onChange={handleContentChange}
-                onSelect={(e) => {
-                  const newCursorPosition = (e.target as HTMLTextAreaElement).selectionStart;
-                  setCursorPosition(newCursorPosition);
-                  onContentChange?.(content, newCursorPosition);
-                }}
-                className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 relative z-10 ${
-                  showHighlight ? 'bg-highlight-bg/30' : ''
-                }`}
-                placeholder="Start writing your document..."
-                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-              />
-              
-              {/* Preview highlight overlay */}
-              {previewHighlight && (
-                <div
-                  className="absolute inset-0 pointer-events-none z-5"
-                  style={{
-                    background: `linear-gradient(to right, 
-                      transparent ${((previewHighlight.start / content.length) * 100)}%, 
-                      rgba(59, 130, 246, 0.2) ${((previewHighlight.start / content.length) * 100)}%, 
-                      rgba(59, 130, 246, 0.2) ${((previewHighlight.end / content.length) * 100)}%, 
-                      transparent ${((previewHighlight.end / content.length) * 100)}%)`
-                  }}
-                />
-              )}
-            </div>
+            {/* Content */}
+            <textarea
+              ref={contentRef}
+              value={content}
+              onChange={handleContentChange}
+              onSelect={(e) => {
+                const newCursorPosition = (e.target as HTMLTextAreaElement).selectionStart;
+                setCursorPosition(newCursorPosition);
+                onContentChange?.(content, newCursorPosition);
+              }}
+              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
+                showHighlight ? 'bg-amber-100/50 dark:bg-amber-900/20' : ''
+              } ${
+                previewHighlight ? 'selection:bg-blue-200 dark:selection:bg-blue-800' : ''
+              }`}
+              placeholder="Start writing your document..."
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+            />
           </div>
         </div>
       </div>
