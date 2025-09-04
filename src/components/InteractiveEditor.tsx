@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DocumentEditor from './DocumentEditor';
-import TextAnalysisOverlay from './TextAnalysisOverlay';
 
 interface Suggestion {
   id: string;
@@ -22,7 +21,6 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [currentContent, setCurrentContent] = useState('');
     const [cursorPosition, setCursorPosition] = useState(0);
-    const [showAnalysis, setShowAnalysis] = useState(true);
     const documentEditorRef = useRef<any>(null);
 
     // Generate contextual suggestions based on content and cursor position
@@ -151,11 +149,6 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
         <DocumentEditor
           ref={documentEditorRef}
           onContentChange={handleContentChange}
-        />
-        
-        <TextAnalysisOverlay
-          content={currentContent}
-          isVisible={showAnalysis && currentContent.length > 50}
         />
       </div>
     );
