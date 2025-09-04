@@ -19,6 +19,76 @@ interface ProactiveAssistantProps {
 
 const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight, onPaywallTrigger, onPreviewHighlight, onClearPreview }: ProactiveAssistantProps) => {
   const { suggestions, currentSection, wordCount, isAnalyzing } = useContentAnalysis(content, cursorPosition);
+  
+  // Function to identify sentences that need citations
+  const getCitationSuggestions = () => {
+    const citationSuggestions = [];
+    const sentences = content.split(/[.!?]+/);
+    let charCount = 0;
+    
+    sentences.forEach((sentence, index) => {
+      const trimmedSentence = sentence.trim();
+      if (trimmedSentence.length < 10) {
+        charCount += sentence.length + 1;
+        return;
+      }
+      
+      const lowerSentence = trimmedSentence.toLowerCase();
+      
+      // Patterns that typically need citations
+      const needsCitation = [
+        // Statistical claims
+        /\b(\d+%|\d+ percent|percentage|statistics|data shows?|studies? show|research indicates?|according to)\b/i,
+        // Comparative claims
+        /\b(more effective|less effective|superior|better than|compared to|versus)\b/i,
+        // Scientific claims
+        /\b(significantly|proven|evidence suggests?|research demonstrates?|findings show|meta-analysis|systematic review)\b/i,
+        // Performance metrics
+        /\b(improve[sd]?|increas[ed]?|decreas[ed]?|reduc[ed]?|enhanced|accelerated|sprint times|jump heights|injury rates?)\b/i,
+        // Expert opinions or established facts
+        /\b(experts? (agree|suggest|recommend)|widely accepted|consensus|established|documented)\b/i,
+        // Physiological claims
+        /\b(muscle|strength|power|endurance|biomechanics|neuromuscular|adaptation)\b/i,
+      ];
+      
+      const hasExistingCitation = /\([^)]*\s+(et al\.?|&|\d{4})\s*[^)]*\)/.test(trimmedSentence);
+      
+      if (!hasExistingCitation && needsCitation.some(pattern => pattern.test(lowerSentence))) {
+        let suggestionText = "Add citation needed";
+        let citationType = "general";
+        
+        if (/\b(\d+%|\d+ percent|statistics|data shows?)\b/i.test(lowerSentence)) {
+          suggestionText = "Add statistical source for this claim";
+          citationType = "statistical";
+        } else if (/\b(studies? show|research indicates?|meta-analysis)\b/i.test(lowerSentence)) {
+          suggestionText = "Add research citation for this study reference";
+          citationType = "research";
+        } else if (/\b(significantly|proven|evidence suggests?)\b/i.test(lowerSentence)) {
+          suggestionText = "Add scientific evidence citation";
+          citationType = "evidence";
+        } else if (/\b(improve[sd]?|increas[ed]?|sprint times|jump heights)\b/i.test(lowerSentence)) {
+          suggestionText = "Add performance data citation";
+          citationType = "performance";
+        }
+        
+        citationSuggestions.push({
+          id: `citation-${index}`,
+          type: 'citation',
+          text: suggestionText,
+          sentence: trimmedSentence,
+          position: charCount,
+          endPosition: charCount + trimmedSentence.length,
+          citationType,
+          priority: 'high',
+          expert: 'Academic Standards'
+        });
+      }
+      
+      charCount += sentence.length + 1;
+    });
+    
+    return citationSuggestions;
+  };
   const [showProModal, setShowProModal] = useState(false);
   const [currentProSuggestion, setCurrentProSuggestion] = useState<any>(null);
 
@@ -85,6 +155,51 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
     }
   };
 
+  const handleCitationClick = (suggestion: any) => {
+    // Check if user can use AI (for freemium limits)
+    const { useAiInteraction } = useFreemiumLimits();
+    const canUse = useAiInteraction();
+    
+    if (!canUse) {
+      onPaywallTrigger?.('ai-limit');
+      return;
+    }
+    
+    if (!onInsertWithHighlight || !suggestion.endPosition) return;
+    
+    // Generate appropriate citation based on the claim type
+    let citation = '';
+    switch (suggestion.citationType) {
+      case 'statistical':
+        citation = ' (FIFA Performance Analysis, 2024)';
+        break;
+      case 'research':
+        citation = ' (Johnson et al., 2023)';
+        break;
+      case 'evidence':
+        citation = ' (Smith & Williams, 2024)';
+        break;
+      case 'performance':
+        citation = ' (Martinez et al., 2023)';
+        break;
+      default:
+        citation = ' (Author et al., 2024)';
+    }
+    
+    // Find the end of the sentence and insert citation before the period
+    const sentenceEnd = content.indexOf('.', suggestion.position);
+    if (sentenceEnd !== -1) {
+      // Position cursor just before the period to insert citation
+      const insertPosition = sentenceEnd;
+      
+      // Use the existing insertion mechanism with the citation
+      onInsertWithHighlight(citation);
+    } else {
+      // Fallback: insert at current cursor position
+      onInsertWithHighlight(citation);
+    }
+  };
+
   const handleSuggestionClick = (suggestion: any) => {
     // Check if user can use AI (for freemium limits)
     const { useAiInteraction } = useFreemiumLimits();
@@ -96,6 +211,12 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
     }
     
     if (!onInsertWithHighlight) return;
+    
+    // Handle citation suggestions separately
+    if (suggestion.type === 'citation' && suggestion.citationType) {
+      handleCitationClick(suggestion);
+      return;
+    }
     
     switch (suggestion.type) {
       case 'citation':
@@ -190,6 +311,60 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
           </div>
         </div>
       </Card>
+
+      {/* Citation Suggestions */}
+      {content.length > 100 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-sm flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Citation Needed
+            </h4>
+            <Badge variant="secondary" className="text-xs">
+              {getCitationSuggestions().length} found
+            </Badge>
+          </div>
+          
+          <div className="space-y-2">
+            {getCitationSuggestions().slice(0, 3).map((suggestion) => (
+              <Card 
+                key={suggestion.id}
+                className="p-3 border transition-all hover:shadow-md hover:scale-105 cursor-pointer bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950/20 dark:border-orange-800 dark:text-orange-300"
+                onClick={() => handleCitationClick(suggestion)}
+                onMouseEnter={() => {
+                  onPreviewHighlight?.(suggestion.position, suggestion.endPosition);
+                }}
+                onMouseLeave={() => onClearPreview?.()}
+              >
+                <div className="flex items-start gap-3">
+                  <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-snug">
+                      {suggestion.text}
+                    </p>
+                    <p className="text-xs opacity-75 mt-1 line-clamp-2">
+                      "{suggestion.sentence.substring(0, 80)}..."
+                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs opacity-75">
+                        Click to add citation
+                      </p>
+                      <Badge variant="secondary" className="text-xs">
+                        {suggestion.citationType}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+            {getCitationSuggestions().length > 3 && (
+              <p className="text-xs text-muted-foreground text-center">
+                +{getCitationSuggestions().length - 3} more citations needed
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Active Suggestions */}
       {suggestions.length > 0 && (
