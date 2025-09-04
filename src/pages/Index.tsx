@@ -35,6 +35,24 @@ const Index = () => {
     setShowPaywall(true);
   };
 
+  const handleAcceptSuggestion = (suggestionId: string, text: string) => {
+    if (documentEditorRef.current) {
+      documentEditorRef.current.acceptSuggestion(suggestionId, text);
+    }
+  };
+
+  const handleRejectSuggestion = (suggestionId: string) => {
+    if (documentEditorRef.current) {
+      documentEditorRef.current.rejectSuggestion(suggestionId);
+    }
+  };
+
+  const handlePreviewSuggestion = (position: number) => {
+    if (documentEditorRef.current) {
+      documentEditorRef.current.previewSuggestion(position);
+    }
+  };
+
   const handleUpgrade = () => {
     // Mock upgrade - in real app this would integrate with Stripe
     alert('🎉 Upgrade to Premium! (This is a demo - no actual payment processed)');
@@ -69,9 +87,9 @@ const Index = () => {
             onDocumentsChange={setUploadedDocuments}
             onPaywallTrigger={handlePaywallTrigger}
             liveSuggestions={liveSuggestions}
-            onAcceptSuggestion={documentEditorRef.current?.acceptSuggestion}
-            onRejectSuggestion={documentEditorRef.current?.rejectSuggestion}
-            onPreviewSuggestion={documentEditorRef.current?.previewSuggestion}
+            onAcceptSuggestion={handleAcceptSuggestion}
+            onRejectSuggestion={handleRejectSuggestion}
+            onPreviewSuggestion={handlePreviewSuggestion}
           />
           
           {/* Reader Reactions - Slide in from right */}
