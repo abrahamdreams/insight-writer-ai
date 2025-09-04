@@ -1,8 +1,10 @@
-import { Brain, Lightbulb, FileText, Target, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Brain, Lightbulb, FileText, Target, AlertCircle, CheckCircle2, Star } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useContentAnalysis } from '@/hooks/useContentAnalysis';
+import ProSuggestionModal from './ProSuggestionModal';
+import { useState } from 'react';
 
 interface ProactiveAssistantProps {
   content: string;
@@ -13,6 +15,43 @@ interface ProactiveAssistantProps {
 
 const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight }: ProactiveAssistantProps) => {
   const { suggestions, currentSection, wordCount, isAnalyzing } = useContentAnalysis(content, cursorPosition);
+  const [showProModal, setShowProModal] = useState(false);
+  const [currentProSuggestion, setCurrentProSuggestion] = useState<any>(null);
+
+  const proSuggestions = [
+    {
+      id: 'thesis-clarity',
+      title: 'Clarify and strengthen thesis',
+      description: 'State your main argument more explicitly, e.g., "This essay argues that weightlifting is essential for modern soccer performance." This helps professors quickly identify your stance.',
+      example: 'This essay argues that systematic weightlifting training is not merely beneficial but essential for optimizing soccer performance, as evidenced by measurable improvements in sprint speed, injury resilience, and on-field power output.',
+      category: 'thesis' as const,
+      priority: 'high' as const
+    },
+    {
+      id: 'evidence-expansion',
+      title: 'Expand on supporting evidence',
+      description: 'Add specific studies, statistics, or expert opinions to strengthen your arguments with concrete data.',
+      example: 'A 2023 meta-analysis by Johnson et al. examining 15 studies with over 400 professional soccer players found that structured weightlifting programs resulted in an average 12% improvement in sprint times and a 34% reduction in lower-body injuries over a competitive season.',
+      category: 'evidence' as const,
+      priority: 'high' as const
+    },
+    {
+      id: 'counterarguments',
+      title: 'Acknowledge potential drawbacks',
+      description: 'Demonstrate critical thinking by addressing potential concerns about weightlifting in soccer.',
+      example: 'Critics argue that excessive weightlifting may reduce flexibility and increase muscle bulk that could hinder agility. However, when properly periodized with sport-specific movement patterns, these concerns are largely mitigated while preserving the performance benefits.',
+      category: 'clarity' as const,
+      priority: 'medium' as const
+    }
+  ];
+
+  const handleShowProSuggestion = (suggestionId: string) => {
+    const proSugg = proSuggestions.find(s => s.id === suggestionId);
+    if (proSugg) {
+      setCurrentProSuggestion(proSugg);
+      setShowProModal(true);
+    }
+  };
 
   const getSuggestionIcon = (type: string) => {
     switch (type) {
@@ -66,6 +105,27 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
 
   return (
     <div className="space-y-4">
+      {/* Pro Suggestions */}
+      {content.length > 100 && (
+        <Card className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 cursor-pointer hover:shadow-md transition-all"
+              onClick={() => handleShowProSuggestion('thesis-clarity')}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-yellow-500">
+              <Star className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-medium text-yellow-900">Pro suggestion</h4>
+                <Badge variant="secondary" className="text-xs">Free sample</Badge>
+              </div>
+              <p className="text-sm text-yellow-700">
+                Clarify and strengthen thesis - Click to see example
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Real-time Status */}
       <Card className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
         <div className="flex items-center gap-3">
@@ -147,6 +207,20 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Pro Suggestion Modal */}
+      {currentProSuggestion && (
+        <ProSuggestionModal
+          isOpen={showProModal}
+          onClose={() => setShowProModal(false)}
+          suggestion={currentProSuggestion}
+          onApplyExample={(text) => {
+            if (onInsertWithHighlight) {
+              onInsertWithHighlight(text);
+            }
+          }}
+        />
       )}
     </div>
   );

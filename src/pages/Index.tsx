@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import Header from '@/components/Header';
 import DocumentEditor from '@/components/DocumentEditor';
 import ExpertReview from '@/components/ExpertReview';
+import ReaderReactions from '@/components/ReaderReactions';
 
 const Index = () => {
   const [documentContent, setDocumentContent] = useState('');
@@ -35,6 +36,7 @@ const Index = () => {
             onInsertWithHighlight: documentEditorRef.current?.insertWithHighlight
           }}
         />
+        <ReaderReactions />
       </div>
     </div>
   );
