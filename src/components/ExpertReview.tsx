@@ -6,6 +6,7 @@ import ExpertComment from './ExpertComment';
 import DocumentUpload from './DocumentUpload';
 import WritingAgents from './WritingAgents';
 import CitationFinder from './CitationFinder';
+import ProactiveAssistant from './ProactiveAssistant';
 import { useState } from 'react';
 
 interface UploadedDocument {
@@ -17,7 +18,15 @@ interface UploadedDocument {
   uploadedAt: Date;
 }
 
-const ExpertReview = () => {
+interface ExpertReviewProps {
+  contentProps?: {
+    content?: string;
+    cursorPosition?: number;
+    onInsertText?: (text: string) => void;
+  };
+}
+
+const ExpertReview = ({ contentProps }: ExpertReviewProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
 
   const getContextualComments = () => {
@@ -98,6 +107,17 @@ const ExpertReview = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Proactive Assistant */}
+        {contentProps?.content && (
+          <div className="p-4 border-b border-border">
+            <ProactiveAssistant 
+              content={contentProps.content}
+              cursorPosition={contentProps.cursorPosition || 0}
+              onInsertText={contentProps.onInsertText}
+            />
+          </div>
+        )}
+        
         {/* Citation Finder */}
         <CitationFinder />
         

@@ -1,11 +1,22 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { FileText, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AIGrader from './AIGrader';
 import VoiceDictation from './VoiceDictation';
 
-const DocumentEditor = () => {
+interface DocumentEditorProps {
+  onContentChange?: (content: string, cursorPosition: number) => void;
+}
+
+interface DocumentEditorRef {
+  getContent: () => string;
+  getCursorPosition: () => number;
+  insertText: (text: string) => void;
+}
+
+const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(({ onContentChange }, ref) => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
+  const [cursorPosition, setCursorPosition] = useState(0);
   const [content, setContent] = useState(`Introduction
 
 Soccer is a sport that necessitates a unique amalgamation of endurance, speed, agility, and strength. As the game has evolved, training methodologies have similarly advanced, with weightlifting emerging as an increasingly integral component in the development of elite soccer athletes. This essay examines the effects of weightlifting on performance athletes in soccer, analyzing its impact on physical capabilities, injury prevention, and on-field performance.
@@ -40,6 +51,7 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       const end = textarea.selectionEnd;
       const newContent = content.substring(0, start) + text + content.substring(end);
       setContent(newContent);
+      setCursorPosition(start + text.length);
       
       // Set cursor position after inserted text
       setTimeout(() => {
@@ -51,6 +63,42 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       setContent(prev => prev + text);
     }
   };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    const newCursorPosition = e.target.selectionStart;
+    setContent(newContent);
+    setCursorPosition(newCursorPosition);
+    onContentChange?.(newContent, newCursorPosition);
+  };
+
+  const handleInsertText = (text: string) => {
+    const textarea = contentRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + text + content.substring(end);
+      setContent(newContent);
+      setCursorPosition(start + text.length);
+      onContentChange?.(newContent, start + text.length);
+      
+      setTimeout(() => {
+        textarea.setSelectionRange(start + text.length, start + text.length);
+        textarea.focus();
+      }, 0);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    getContent: () => content,
+    getCursorPosition: () => cursorPosition,
+    insertText: handleInsertText
+  }));
+
+  useEffect(() => {
+    // Initial content sync
+    onContentChange?.(content, cursorPosition);
+  }, []);
 
   return (
     <div className="flex-1 bg-editor-bg min-h-screen">
@@ -104,7 +152,12 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
             <textarea
               ref={contentRef}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={handleContentChange}
+              onSelect={(e) => {
+                const newCursorPosition = (e.target as HTMLTextAreaElement).selectionStart;
+                setCursorPosition(newCursorPosition);
+                onContentChange?.(content, newCursorPosition);
+              }}
               className="w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide"
               placeholder="Start writing your document..."
               style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
@@ -114,6 +167,6 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       </div>
     </div>
   );
-};
+});
 
 export default DocumentEditor;
