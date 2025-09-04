@@ -153,8 +153,8 @@ const InlineSuggestions = ({ content, cursorPosition, onInsertText, containerRef
   if (activeSuggestions.length === 0) return null;
 
   return (
-    <div className="fixed top-20 right-4 max-w-80 space-y-2 z-50">
-      {activeSuggestions.slice(0, 3).map((suggestion) => {
+    <div className="space-y-2">
+      {activeSuggestions.slice(0, 2).map((suggestion) => {
         const Icon = getSuggestionIcon(suggestion.type);
         const colorClass = getSuggestionColor(suggestion.priority);
         const expertInfo = suggestion.expert ? expertData[suggestion.expert as keyof typeof expertData] : null;

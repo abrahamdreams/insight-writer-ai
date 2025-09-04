@@ -130,7 +130,7 @@ const TextAnalysisOverlay = ({ content, cursorPosition, onInsertText }: TextAnal
   if (nearbyPoints.length === 0) return null;
 
   return (
-    <div className="absolute -right-64 top-0 w-60 space-y-2 z-20">
+    <div className="absolute -right-80 top-0 w-60 space-y-2 z-10">
       <div className="text-xs font-medium text-muted-foreground mb-2">
         Analysis for nearby text
       </div>

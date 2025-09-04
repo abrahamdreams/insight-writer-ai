@@ -125,7 +125,7 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
   }, []);
 
   return (
-    <div className="flex-1 bg-editor-bg min-h-screen relative" ref={containerRef}>
+    <div className="flex-1 bg-editor-bg min-h-screen relative overflow-hidden" ref={containerRef}>
       <div className="max-w-4xl mx-auto p-8">
         {/* Document Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -211,14 +211,16 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
         </div>
       </div>
 
-      {/* Inline Suggestions */}
-      {showInlineSuggestions && (
-        <InlineSuggestions
-          content={content}
-          cursorPosition={cursorPosition}
-          onInsertText={handleInsertWithHighlight}
-          containerRef={containerRef}
-        />
+      {/* Inline Suggestions - positioned to not conflict with sidebar */}
+      {showInlineSuggestions && content.length > 50 && (
+        <div className="absolute top-20 right-4 max-w-72 z-30">
+          <InlineSuggestions
+            content={content}
+            cursorPosition={cursorPosition}
+            onInsertText={handleInsertWithHighlight}
+            containerRef={containerRef}
+          />
+        </div>
       )}
     </div>
   );
