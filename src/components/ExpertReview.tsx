@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ExpertComment from './ExpertComment';
 import WritingAgents from './WritingAgents';
-import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
 import ExpertReviewDocumentUpload from './ExpertReviewDocumentUpload';
 import UsageCounter from './UsageCounter';
@@ -149,7 +148,6 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CitationFinder />
             <WritingAgents />
           </CollapsibleContent>
         </Collapsible>
