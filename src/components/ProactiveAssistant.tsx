@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useContentAnalysis } from '@/hooks/useContentAnalysis';
+import { useFreemiumLimits } from '@/hooks/useFreemiumLimits';
 import ProSuggestionModal from './ProSuggestionModal';
 import { useState } from 'react';
 
@@ -11,9 +12,10 @@ interface ProactiveAssistantProps {
   cursorPosition: number;
   onInsertText?: (text: string) => void;
   onInsertWithHighlight?: (text: string) => void;
+  onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
 }
 
-const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight }: ProactiveAssistantProps) => {
+const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight, onPaywallTrigger }: ProactiveAssistantProps) => {
   const { suggestions, currentSection, wordCount, isAnalyzing } = useContentAnalysis(content, cursorPosition);
   const [showProModal, setShowProModal] = useState(false);
   const [currentProSuggestion, setCurrentProSuggestion] = useState<any>(null);
@@ -46,6 +48,15 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
   ];
 
   const handleShowProSuggestion = (suggestionId: string) => {
+    // Check freemium limits before showing pro suggestion
+    const { useAiInteraction } = useFreemiumLimits();
+    const canUse = useAiInteraction();
+    
+    if (!canUse) {
+      onPaywallTrigger?.('ai-limit');
+      return;
+    }
+    
     const proSugg = proSuggestions.find(s => s.id === suggestionId);
     if (proSugg) {
       setCurrentProSuggestion(proSugg);
@@ -73,6 +84,15 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
   };
 
   const handleSuggestionClick = (suggestion: any) => {
+    // Check if user can use AI (for freemium limits)
+    const { useAiInteraction } = useFreemiumLimits();
+    const canUse = useAiInteraction();
+    
+    if (!canUse) {
+      onPaywallTrigger?.('ai-limit');
+      return;
+    }
+    
     if (!onInsertWithHighlight) return;
     
     switch (suggestion.type) {

@@ -24,12 +24,14 @@ interface ExpertReviewProps {
     cursorPosition?: number;
     onInsertText?: (text: string) => void;
     onInsertWithHighlight?: (text: string) => void;
+    onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
   };
   uploadedDocuments?: any[];
   onDocumentsChange?: (documents: any[]) => void;
+  onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
 }
 
-const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange = () => {} }: ExpertReviewProps) => {
+const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange = () => {}, onPaywallTrigger }: ExpertReviewProps) => {
 
   const getContextualComments = () => {
     const baseComments = [
@@ -111,6 +113,7 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
       <ExpertReviewDocumentUpload 
         documents={uploadedDocuments}
         onDocumentsChange={onDocumentsChange}
+        onPaywallTrigger={onPaywallTrigger}
       />
 
       {/* Content */}
@@ -123,6 +126,7 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
               cursorPosition={contentProps.cursorPosition || 0}
               onInsertText={contentProps.onInsertText}
               onInsertWithHighlight={contentProps.onInsertWithHighlight}
+              onPaywallTrigger={contentProps.onPaywallTrigger}
             />
           </div>
         )}

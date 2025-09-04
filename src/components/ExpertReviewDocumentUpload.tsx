@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
-import { Upload, File, X, ChevronDown } from 'lucide-react';
+import { Upload, File, X, ChevronDown, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useFreemiumLimits } from '@/hooks/useFreemiumLimits';
 import {
   Collapsible,
   CollapsibleContent,
@@ -22,13 +23,15 @@ interface UploadedDocument {
 interface ExpertReviewDocumentUploadProps {
   documents: UploadedDocument[];
   onDocumentsChange: (documents: UploadedDocument[]) => void;
+  onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
 }
 
-const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertReviewDocumentUploadProps) => {
+const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange, onPaywallTrigger }: ExpertReviewDocumentUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { isPremium } = useFreemiumLimits();
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -66,6 +69,12 @@ const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertRevi
   };
 
   const handleFiles = async (files: FileList) => {
+    // Check freemium limits for document uploads
+    if (!isPremium && documents.length >= 1) {
+      onPaywallTrigger?.('document-limit');
+      return;
+    }
+
     setUploading(true);
     const newDocuments: UploadedDocument[] = [];
 
@@ -80,10 +89,14 @@ const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertRevi
         continue;
       }
 
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (Free: 5MB, Premium: 50MB)
+      const maxSize = isPremium ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+      const sizeLabel = isPremium ? '50MB' : '5MB';
+      
+      if (file.size > maxSize) {
         toast({
           title: "File too large",
-          description: `${file.name} - Maximum file size is 5MB`,
+          description: `${file.name} - Maximum file size is ${sizeLabel}`,
           variant: "destructive",
         });
         continue;
@@ -144,16 +157,24 @@ const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertRevi
           <div className="flex items-center gap-2">
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="p-0 h-auto">
-                <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  <span className="font-medium">Upload docs</span>
-                  {documents.length > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-5 text-xs">
-                      {documents.length}
-                    </Badge>
-                  )}
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                </div>
+            <div className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              <span className="font-medium">Upload docs</span>
+              {documents.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 text-xs">
+                  {documents.length}
+                </Badge>
+              )}
+              {!isPremium && (
+                <Badge variant="outline" className="ml-1 h-5 text-xs border-orange-300 text-orange-600">
+                  {documents.length}/1
+                </Badge>
+              )}
+              {isPremium && (
+                <Crown className="h-3 w-3 text-yellow-500" />
+              )}
+              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
               </Button>
             </CollapsibleTrigger>
           </div>
@@ -170,7 +191,10 @@ const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertRevi
         <CollapsibleContent className="mt-3">
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              Upload assignment guidelines, rubrics, or reference materials for contextual feedback
+              {isPremium 
+                ? 'Upload assignment guidelines, rubrics, or reference materials (up to 50MB each)'
+                : 'Upload 1 document up to 10 pages (5MB max) • Upgrade for unlimited uploads'
+              }
             </p>
 
             {/* Uploaded Documents */}
@@ -203,8 +227,14 @@ const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertRevi
             )}
 
             {documents.length > 0 && (
-              <div className="p-2 bg-accent/10 rounded text-xs text-accent">
-                AI feedback will reference your uploaded materials
+              <div className={`p-2 rounded text-xs ${isPremium 
+                ? 'bg-accent/10 text-accent' 
+                : 'bg-orange-50 text-orange-600 border border-orange-200'
+              }`}>
+                {isPremium 
+                  ? 'AI feedback will reference your uploaded materials'
+                  : `Free plan: ${documents.length}/1 documents used • Upgrade for unlimited uploads`
+                }
               </div>
             )}
           </div>
