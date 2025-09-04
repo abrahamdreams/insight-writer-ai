@@ -13,9 +13,11 @@ interface ProactiveAssistantProps {
   onInsertText?: (text: string) => void;
   onInsertWithHighlight?: (text: string) => void;
   onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
+  onPreviewHighlight?: (start: number, end: number) => void;
+  onClearPreview?: () => void;
 }
 
-const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight, onPaywallTrigger }: ProactiveAssistantProps) => {
+const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight, onPaywallTrigger, onPreviewHighlight, onClearPreview }: ProactiveAssistantProps) => {
   const { suggestions, currentSection, wordCount, isAnalyzing } = useContentAnalysis(content, cursorPosition);
   const [showProModal, setShowProModal] = useState(false);
   const [currentProSuggestion, setCurrentProSuggestion] = useState<any>(null);
@@ -210,6 +212,43 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
                   key={suggestion.id}
                   className={`p-3 border transition-all hover:shadow-md hover:scale-105 cursor-pointer ${getSuggestionColor(suggestion.priority)}`}
                   onClick={() => handleSuggestionClick(suggestion)}
+                  onMouseEnter={() => {
+                    if (suggestion.type === 'expansion' && suggestion.id === 'expansion-powerlifting') {
+                      // Find where "powerlifting" or similar terms appear in the content
+                      const searchTerms = ['powerlifting', 'weightlifting', 'strength training'];
+                      for (const term of searchTerms) {
+                        const index = content.toLowerCase().indexOf(term);
+                        if (index !== -1) {
+                          onPreviewHighlight?.(index, index + term.length);
+                          break;
+                        }
+                      }
+                    } else if (suggestion.type === 'citation') {
+                      // Highlight the sentence that needs citation
+                      const sentences = content.split(/[.!?]+/);
+                      let charCount = 0;
+                      for (const sentence of sentences) {
+                        if (sentence.toLowerCase().includes('studies show') || 
+                            sentence.toLowerCase().includes('research indicates') ||
+                            sentence.toLowerCase().includes('significantly')) {
+                          onPreviewHighlight?.(charCount, charCount + sentence.length);
+                          break;
+                        }
+                        charCount += sentence.length + 1;
+                      }
+                    } else if (suggestion.type === 'clarification') {
+                      // Highlight vague terms
+                      const vageTerms = ['many', 'most', 'some', 'often', 'usually'];
+                      for (const term of vageTerms) {
+                        const index = content.toLowerCase().indexOf(term);
+                        if (index !== -1) {
+                          onPreviewHighlight?.(index, index + term.length);
+                          break;
+                        }
+                      }
+                    }
+                  }}
+                  onMouseLeave={() => onClearPreview?.()}
                 >
                   <div className="flex items-start gap-3">
                     <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />

@@ -16,7 +16,14 @@ const Index = () => {
   const [paywallTrigger, setPaywallTrigger] = useState<'ai-limit' | 'document-limit'>('ai-limit');
   const [showPricing, setShowPricing] = useState(false);
   const [showReaderReactions, setShowReaderReactions] = useState(false);
-  const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
+  const documentEditorRef = useRef<{ 
+    getContent: () => string; 
+    getCursorPosition: () => number; 
+    insertText: (text: string) => void; 
+    insertWithHighlight: (text: string) => void;
+    previewHighlight: (start: number, end: number) => void;
+    clearPreview: () => void;
+  } | null>(null);
 
   const handleInsertText = (text: string) => {
     if (documentEditorRef.current) {
@@ -61,7 +68,9 @@ const Index = () => {
               cursorPosition: cursorPosition,
               onInsertText: handleInsertText,
               onInsertWithHighlight: documentEditorRef.current?.insertWithHighlight,
-              onPaywallTrigger: handlePaywallTrigger
+              onPaywallTrigger: handlePaywallTrigger,
+              onPreviewHighlight: documentEditorRef.current?.previewHighlight,
+              onClearPreview: documentEditorRef.current?.clearPreview
             }}
             uploadedDocuments={uploadedDocuments}
             onDocumentsChange={setUploadedDocuments}

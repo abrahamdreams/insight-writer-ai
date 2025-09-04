@@ -19,6 +19,7 @@ const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(({ onC
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showHighlight, setShowHighlight] = useState(false);
+  const [previewHighlight, setPreviewHighlight] = useState<{start: number, end: number} | null>(null);
   const [content, setContent] = useState(`Introduction
 
 Soccer is a sport that necessitates a unique amalgamation of endurance, speed, agility, and strength. As the game has evolved, training methodologies have similarly advanced, with weightlifting emerging as an increasingly integral component in the development of elite soccer athletes. This essay examines the effects of weightlifting on performance athletes in soccer, analyzing its impact on physical capabilities, injury prevention, and on-field performance.
@@ -112,11 +113,21 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
     }
   };
 
+  const handlePreviewHighlight = (start: number, end: number) => {
+    setPreviewHighlight({start, end});
+  };
+
+  const handleClearPreview = () => {
+    setPreviewHighlight(null);
+  };
+
   useImperativeHandle(ref, () => ({
     getContent: () => content,
     getCursorPosition: () => cursorPosition,
     insertText: handleInsertText,
-    insertWithHighlight: handleInsertWithHighlight
+    insertWithHighlight: handleInsertWithHighlight,
+    previewHighlight: handlePreviewHighlight,
+    clearPreview: handleClearPreview
   }));
 
   useEffect(() => {
@@ -172,22 +183,38 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
               placeholder="Document title..."
             />
 
-            {/* Content */}
-            <textarea
-              ref={contentRef}
-              value={content}
-              onChange={handleContentChange}
-              onSelect={(e) => {
-                const newCursorPosition = (e.target as HTMLTextAreaElement).selectionStart;
-                setCursorPosition(newCursorPosition);
-                onContentChange?.(content, newCursorPosition);
-              }}
-              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
-                showHighlight ? 'bg-highlight-bg/30' : ''
-              }`}
-              placeholder="Start writing your document..."
-              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-            />
+            {/* Content with overlay for highlighting */}
+            <div className="relative">
+              <textarea
+                ref={contentRef}
+                value={content}
+                onChange={handleContentChange}
+                onSelect={(e) => {
+                  const newCursorPosition = (e.target as HTMLTextAreaElement).selectionStart;
+                  setCursorPosition(newCursorPosition);
+                  onContentChange?.(content, newCursorPosition);
+                }}
+                className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 relative z-10 ${
+                  showHighlight ? 'bg-highlight-bg/30' : ''
+                }`}
+                placeholder="Start writing your document..."
+                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+              />
+              
+              {/* Preview highlight overlay */}
+              {previewHighlight && (
+                <div
+                  className="absolute inset-0 pointer-events-none z-5"
+                  style={{
+                    background: `linear-gradient(to right, 
+                      transparent ${((previewHighlight.start / content.length) * 100)}%, 
+                      rgba(59, 130, 246, 0.2) ${((previewHighlight.start / content.length) * 100)}%, 
+                      rgba(59, 130, 246, 0.2) ${((previewHighlight.end / content.length) * 100)}%, 
+                      transparent ${((previewHighlight.end / content.length) * 100)}%)`
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

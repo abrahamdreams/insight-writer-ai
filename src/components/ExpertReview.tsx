@@ -27,6 +27,8 @@ interface ExpertReviewProps {
     onInsertText?: (text: string) => void;
     onInsertWithHighlight?: (text: string) => void;
     onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
+    onPreviewHighlight?: (start: number, end: number) => void;
+    onClearPreview?: () => void;
   };
   uploadedDocuments?: any[];
   onDocumentsChange?: (documents: any[]) => void;
@@ -129,6 +131,8 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
               onInsertText={contentProps.onInsertText}
               onInsertWithHighlight={contentProps.onInsertWithHighlight}
               onPaywallTrigger={contentProps.onPaywallTrigger}
+              onPreviewHighlight={contentProps.onPreviewHighlight}
+              onClearPreview={contentProps.onClearPreview}
             />
           </div>
         )}
