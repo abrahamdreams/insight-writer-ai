@@ -123,20 +123,22 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       textarea.setSelectionRange(position, position);
       setCursorPosition(position);
       
-      // Highlight area around the position (±50 characters for context)
-      const contextStart = Math.max(0, position - 25);
-      const contextEnd = Math.min(content.length, position + 25);
+      // Highlight area around the position (±50characters for context)
+      const contextStart = Math.max(0, position - 50);
+      const contextEnd = Math.min(content.length, position + 50);
       setHighlightPosition({ start: contextStart, end: contextEnd });
       setShowHighlight(true);
       
       // Remove highlight after 3 seconds
       setTimeout(() => setShowHighlight(false), 3000);
       
-      // Scroll to position if needed
+      // Scroll to position - improved scrolling logic
       const lines = content.substring(0, position).split('\n').length;
-      const lineHeight = 24; // approximate line height
-      const scrollTop = Math.max(0, (lines - 10) * lineHeight);
+      const lineHeight = 28; // More accurate line height
+      const scrollTop = Math.max(0, (lines - 5) * lineHeight); // Show 5 lines above for context
       textarea.scrollTop = scrollTop;
+      
+      console.log(`Highlighted position ${position}, context: ${contextStart}-${contextEnd}, lines: ${lines}`);
     }
   };
 
@@ -211,19 +213,20 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                 setCursorPosition(newCursorPosition);
                 onContentChange?.(content, newCursorPosition);
               }}
-              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
-                showHighlight ? 'bg-highlight-bg/30' : ''
+              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-500 ${
+                showHighlight ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
               }`}
               placeholder="Start writing your document..."
               style={{ 
                 fontFamily: 'system-ui, -apple-system, sans-serif',
-                ...(showHighlight && {
-                  background: `linear-gradient(to right, 
-                    transparent ${(highlightPosition.start / content.length) * 100}%, 
-                    hsl(var(--highlight-background) / 0.3) ${(highlightPosition.start / content.length) * 100}%, 
-                    hsl(var(--highlight-background) / 0.3) ${(highlightPosition.end / content.length) * 100}%, 
-                    transparent ${(highlightPosition.end / content.length) * 100}%)`
-                })
+                background: showHighlight ? 
+                  `linear-gradient(to right, 
+                    transparent 0%, 
+                    transparent ${Math.max(0, (highlightPosition.start / Math.max(content.length, 1)) * 100)}%, 
+                    rgba(59, 130, 246, 0.15) ${Math.max(0, (highlightPosition.start / Math.max(content.length, 1)) * 100)}%, 
+                    rgba(59, 130, 246, 0.15) ${Math.min(100, (highlightPosition.end / Math.max(content.length, 1)) * 100)}%, 
+                    transparent ${Math.min(100, (highlightPosition.end / Math.max(content.length, 1)) * 100)}%, 
+                    transparent 100%)` : 'transparent'
               }}
             />
           </div>

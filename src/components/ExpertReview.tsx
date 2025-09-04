@@ -156,8 +156,12 @@ const ExpertReview = ({
             </div>
             <div className="space-y-3">
               {liveSuggestions.slice(0, 3).map((suggestion) => (
-                <div key={suggestion.id} className="bg-gray-50 rounded-lg p-3 space-y-2 cursor-pointer hover:bg-gray-100 transition-colors"
-                     onClick={() => onPreviewSuggestion?.(suggestion.position)}>
+                <div 
+                  key={suggestion.id} 
+                  className="bg-gray-50 rounded-lg p-3 space-y-2 cursor-pointer hover:bg-gray-100 transition-colors border-l-4 border-transparent hover:border-blue-500"
+                  onMouseEnter={() => onPreviewSuggestion?.(suggestion.position)}
+                  onClick={() => onAcceptSuggestion?.(suggestion.id, suggestion.text)}
+                >
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
                     <Badge variant="outline" className="text-xs">{suggestion.expert || 'AI'}</Badge>
@@ -171,20 +175,30 @@ const ExpertReview = ({
                   <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       size="sm"
-                      onClick={() => onAcceptSuggestion?.(suggestion.id, suggestion.text)}
-                      className="h-6 text-xs px-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAcceptSuggestion?.(suggestion.id, suggestion.text);
+                      }}
+                      className="h-6 text-xs px-2 bg-blue-600 hover:bg-blue-700"
                     >
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      Accept
+                      Insert
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => onRejectSuggestion?.(suggestion.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRejectSuggestion?.(suggestion.id);
+                      }}
                       className="h-6 text-xs px-2"
                     >
                       <X className="h-3 w-3" />
+                      Dismiss
                     </Button>
+                  </div>
+                  <div className="text-xs text-blue-600 font-medium">
+                    💡 Hover to preview • Click to insert: "{suggestion.text.substring(0, 50)}..."
                   </div>
                 </div>
               ))}
