@@ -52,6 +52,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Academic editor colors
+				'editor-bg': 'hsl(var(--editor-background))',
+				'sidebar-bg': 'hsl(var(--sidebar-background))',
+				'expert-accent': 'hsl(var(--expert-accent))',
+				'suggestion-bg': 'hsl(var(--suggestion-background))',
+				'comment-bg': 'hsl(var(--comment-background))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
