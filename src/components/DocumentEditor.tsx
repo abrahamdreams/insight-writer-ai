@@ -123,6 +123,13 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       // Also set our state for any additional visual effects
       setPreviewHighlight({start, end});
       
+      // For citation previews, add a visual indicator
+      if (end - start <= 2) {
+        // This is likely a citation insertion point
+        setShowHighlight(true);
+        setTimeout(() => setShowHighlight(false), 2000);
+      }
+      
       // Clear selection after a short delay
       setTimeout(() => {
         textarea.setSelectionRange(cursorPosition, cursorPosition);
@@ -212,7 +219,7 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                 onContentChange?.(content, newCursorPosition);
               }}
               className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
-                showHighlight ? 'bg-amber-100/50 dark:bg-amber-900/20' : ''
+                showHighlight ? 'bg-blue-100/50 dark:bg-blue-900/20 shadow-inner' : ''
               } ${
                 previewHighlight ? 'selection:bg-blue-200 dark:selection:bg-blue-800' : ''
               }`}

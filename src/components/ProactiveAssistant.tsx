@@ -329,10 +329,16 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
             {getCitationSuggestions().slice(0, 3).map((suggestion) => (
               <Card 
                 key={suggestion.id}
-                className="p-3 border transition-all hover:shadow-md hover:scale-105 cursor-pointer bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950/20 dark:border-orange-800 dark:text-orange-300"
+                className="p-3 border transition-all hover:shadow-md hover:scale-105 cursor-pointer bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-300"
                 onClick={() => handleCitationClick(suggestion)}
                 onMouseEnter={() => {
-                  onPreviewHighlight?.(suggestion.position, suggestion.endPosition);
+                  // Show where the citation will be inserted (end of sentence)
+                  const sentenceEnd = content.indexOf('.', suggestion.position);
+                  if (sentenceEnd !== -1) {
+                    onPreviewHighlight?.(sentenceEnd - 1, sentenceEnd + 1);
+                  } else {
+                    onPreviewHighlight?.(suggestion.position, suggestion.endPosition);
+                  }
                 }}
                 onMouseLeave={() => onClearPreview?.()}
               >
@@ -340,16 +346,17 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWit
                   <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium leading-snug">
-                      {suggestion.text}
+                      📖 {suggestion.text}
                     </p>
-                    <p className="text-xs opacity-75 mt-1 line-clamp-2">
+                    <p className="text-xs opacity-75 mt-1 line-clamp-2 bg-blue-100/50 dark:bg-blue-900/20 rounded px-2 py-1">
                       "{suggestion.sentence.substring(0, 80)}..."
                     </p>
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs opacity-75">
+                      <p className="text-xs opacity-75 flex items-center gap-1">
+                        <span className="inline-block w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Click to add citation
                       </p>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                         {suggestion.citationType}
                       </Badge>
                     </div>
