@@ -13,12 +13,14 @@ interface DocumentEditorRef {
   getCursorPosition: () => number;
   insertText: (text: string) => void;
   insertWithHighlight: (text: string) => void;
+  focusAtPosition: (position: number) => void;
 }
 
 const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(({ onContentChange }, ref) => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showHighlight, setShowHighlight] = useState(false);
+  const [highlightPosition, setHighlightPosition] = useState({ start: 0, end: 0 });
   const [content, setContent] = useState(`Introduction
 
 Soccer is a sport that necessitates a unique amalgamation of endurance, speed, agility, and strength. As the game has evolved, training methodologies have similarly advanced, with weightlifting emerging as an increasingly integral component in the development of elite soccer athletes. This essay examines the effects of weightlifting on performance athletes in soccer, analyzing its impact on physical capabilities, injury prevention, and on-field performance.
@@ -101,9 +103,10 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
       setCursorPosition(start + text.length);
       onContentChange?.(newContent, start + text.length);
       
-      // Show highlight effect
+      // Show highlight effect for inserted text
+      setHighlightPosition({ start, end: start + text.length });
       setShowHighlight(true);
-      setTimeout(() => setShowHighlight(false), 1500);
+      setTimeout(() => setShowHighlight(false), 2000);
       
       setTimeout(() => {
         textarea.setSelectionRange(start + text.length, start + text.length);
@@ -112,11 +115,37 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
     }
   };
 
+  const handleFocusAtPosition = (position: number) => {
+    const textarea = contentRef.current;
+    if (textarea) {
+      // Focus the textarea and set cursor position
+      textarea.focus();
+      textarea.setSelectionRange(position, position);
+      setCursorPosition(position);
+      
+      // Highlight area around the position (±50 characters for context)
+      const contextStart = Math.max(0, position - 25);
+      const contextEnd = Math.min(content.length, position + 25);
+      setHighlightPosition({ start: contextStart, end: contextEnd });
+      setShowHighlight(true);
+      
+      // Remove highlight after 3 seconds
+      setTimeout(() => setShowHighlight(false), 3000);
+      
+      // Scroll to position if needed
+      const lines = content.substring(0, position).split('\n').length;
+      const lineHeight = 24; // approximate line height
+      const scrollTop = Math.max(0, (lines - 10) * lineHeight);
+      textarea.scrollTop = scrollTop;
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     getContent: () => content,
     getCursorPosition: () => cursorPosition,
     insertText: handleInsertText,
-    insertWithHighlight: handleInsertWithHighlight
+    insertWithHighlight: handleInsertWithHighlight,
+    focusAtPosition: handleFocusAtPosition
   }));
 
   useEffect(() => {
@@ -186,7 +215,16 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                 showHighlight ? 'bg-highlight-bg/30' : ''
               }`}
               placeholder="Start writing your document..."
-              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+              style={{ 
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                ...(showHighlight && {
+                  background: `linear-gradient(to right, 
+                    transparent ${(highlightPosition.start / content.length) * 100}%, 
+                    hsl(var(--highlight-background) / 0.3) ${(highlightPosition.start / content.length) * 100}%, 
+                    hsl(var(--highlight-background) / 0.3) ${(highlightPosition.end / content.length) * 100}%, 
+                    transparent ${(highlightPosition.end / content.length) * 100}%)`
+                })
+              }}
             />
           </div>
         </div>

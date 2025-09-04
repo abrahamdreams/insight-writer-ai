@@ -141,7 +141,12 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
       insertWithHighlight: (text: string) => documentEditorRef.current?.insertWithHighlight(text),
       getSuggestions: () => suggestions,
       acceptSuggestion: handleAcceptSuggestion,
-      rejectSuggestion: handleRejectSuggestion
+      rejectSuggestion: handleRejectSuggestion,
+      previewSuggestion: (position: number) => {
+        if (documentEditorRef.current) {
+          documentEditorRef.current.focusAtPosition(position);
+        }
+      }
     }));
 
     return (

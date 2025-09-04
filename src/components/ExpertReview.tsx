@@ -41,6 +41,7 @@ interface ExpertReviewProps {
   liveSuggestions?: LiveSuggestion[];
   onAcceptSuggestion?: (suggestionId: string, text: string) => void;
   onRejectSuggestion?: (suggestionId: string) => void;
+  onPreviewSuggestion?: (position: number) => void;
 }
 
 const ExpertReview = ({ 
@@ -50,7 +51,8 @@ const ExpertReview = ({
   onPaywallTrigger,
   liveSuggestions = [],
   onAcceptSuggestion,
-  onRejectSuggestion
+  onRejectSuggestion,
+  onPreviewSuggestion
 }: ExpertReviewProps) => {
 
   const getContextualComments = () => {
@@ -165,7 +167,8 @@ const ExpertReview = ({
                 };
 
                 return (
-                  <div key={suggestion.id} className="bg-muted/30 rounded-lg p-3 space-y-2">
+                  <div key={suggestion.id} className="bg-muted/30 rounded-lg p-3 space-y-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                       onClick={() => onPreviewSuggestion?.(suggestion.position)}>
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${getExpertColor(suggestion.expert)}`} />
                       {suggestion.expert && (
@@ -178,7 +181,7 @@ const ExpertReview = ({
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {suggestion.suggestion}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="sm"
                         onClick={() => onAcceptSuggestion?.(suggestion.id, suggestion.text)}

@@ -71,6 +71,7 @@ const Index = () => {
             liveSuggestions={liveSuggestions}
             onAcceptSuggestion={documentEditorRef.current?.acceptSuggestion}
             onRejectSuggestion={documentEditorRef.current?.rejectSuggestion}
+            onPreviewSuggestion={documentEditorRef.current?.previewSuggestion}
           />
           
           {/* Reader Reactions - Slide in from right */}
