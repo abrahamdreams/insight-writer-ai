@@ -1,13 +1,7 @@
 import { FileText, Share, MoreHorizontal, Star, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import HeaderDocumentUpload from './HeaderDocumentUpload';
 
-interface HeaderProps {
-  documents?: any[];
-  onDocumentsChange?: (documents: any[]) => void;
-}
-
-const Header = ({ documents = [], onDocumentsChange = () => {} }: HeaderProps) => {
+const Header = () => {
   return (
     <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
       {/* Left side - Document info */}
@@ -20,10 +14,6 @@ const Header = ({ documents = [], onDocumentsChange = () => {} }: HeaderProps) =
 
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
-        <HeaderDocumentUpload 
-          documents={documents}
-          onDocumentsChange={onDocumentsChange}
-        />
         <Button variant="ghost" size="sm" className="gap-2">
           <Star className="h-4 w-4" />
           Get Pro

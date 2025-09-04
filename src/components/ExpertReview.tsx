@@ -6,6 +6,7 @@ import ExpertComment from './ExpertComment';
 import WritingAgents from './WritingAgents';
 import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
+import ExpertReviewDocumentUpload from './ExpertReviewDocumentUpload';
 import { useState } from 'react';
 
 interface UploadedDocument {
@@ -25,9 +26,10 @@ interface ExpertReviewProps {
     onInsertWithHighlight?: (text: string) => void;
   };
   uploadedDocuments?: any[];
+  onDocumentsChange?: (documents: any[]) => void;
 }
 
-const ExpertReview = ({ contentProps, uploadedDocuments = [] }: ExpertReviewProps) => {
+const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange = () => {} }: ExpertReviewProps) => {
 
   const getContextualComments = () => {
     const baseComments = [
@@ -104,6 +106,12 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [] }: ExpertReviewProp
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Document Upload */}
+      <ExpertReviewDocumentUpload 
+        documents={uploadedDocuments}
+        onDocumentsChange={onDocumentsChange}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">

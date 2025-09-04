@@ -1,13 +1,14 @@
 import { useState, useRef } from 'react';
-import { Upload, File, X } from 'lucide-react';
+import { Upload, File, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface UploadedDocument {
   id: string;
@@ -18,13 +19,14 @@ interface UploadedDocument {
   uploadedAt: Date;
 }
 
-interface HeaderDocumentUploadProps {
+interface ExpertReviewDocumentUploadProps {
   documents: UploadedDocument[];
   onDocumentsChange: (documents: UploadedDocument[]) => void;
 }
 
-const HeaderDocumentUpload = ({ documents, onDocumentsChange }: HeaderDocumentUploadProps) => {
+const ExpertReviewDocumentUpload = ({ documents, onDocumentsChange }: ExpertReviewDocumentUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -116,6 +118,7 @@ const HeaderDocumentUpload = ({ documents, onDocumentsChange }: HeaderDocumentUp
         title: "Documents uploaded",
         description: `Successfully uploaded ${newDocuments.length} document(s)`,
       });
+      setIsOpen(true); // Expand to show uploaded docs
     }
   };
 
@@ -135,88 +138,89 @@ const HeaderDocumentUpload = ({ documents, onDocumentsChange }: HeaderDocumentUp
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 relative">
-          <Upload className="h-4 w-4" />
-          Upload docs
-          {documents.length > 0 && (
-            <Badge variant="secondary" className="ml-1 h-5 text-xs">
-              {documents.length}
-            </Badge>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="end">
-        <div className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-2">Upload Context Documents</h4>
-            <p className="text-xs text-muted-foreground mb-3">
-              Upload assignment guidelines, rubrics, or reference materials
-            </p>
+    <div className="p-4 border-b border-border">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-0 h-auto">
+                <div className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  <span className="font-medium">Upload docs</span>
+                  {documents.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 text-xs">
+                      {documents.length}
+                    </Badge>
+                  )}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </Button>
+            </CollapsibleTrigger>
           </div>
-
-          {/* Upload Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="w-full"
           >
-            <Upload className="h-4 w-4 mr-2" />
             {uploading ? 'Processing...' : 'Choose Files'}
           </Button>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".pdf,.docx,.txt,.md"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+        </div>
 
-          {/* Uploaded Documents */}
-          {documents.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Uploaded</span>
-                <Badge variant="secondary">{documents.length}</Badge>
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-2">
+        <CollapsibleContent className="mt-3">
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Upload assignment guidelines, rubrics, or reference materials for contextual feedback
+            </p>
+
+            {/* Uploaded Documents */}
+            {documents.length > 0 && (
+              <div className="space-y-2">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-2 bg-muted/50 rounded text-xs">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <File className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate font-medium">{doc.name}</p>
-                        <p className="text-muted-foreground">{formatFileSize(doc.size)}</p>
+                  <Card key={doc.id} className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{doc.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeDocument(doc.id)}
+                        className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDocument(doc.id)}
-                      className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  </Card>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {documents.length > 0 && (
-            <div className="p-2 bg-accent/10 rounded text-xs text-accent">
-              AI feedback will reference your uploaded materials
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+            {documents.length > 0 && (
+              <div className="p-2 bg-accent/10 rounded text-xs text-accent">
+                AI feedback will reference your uploaded materials
+              </div>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.docx,.txt,.md"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+    </div>
   );
 };
 
-export default HeaderDocumentUpload;
+export default ExpertReviewDocumentUpload;

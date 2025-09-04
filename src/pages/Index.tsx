@@ -23,10 +23,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header 
-        documents={uploadedDocuments}
-        onDocumentsChange={setUploadedDocuments}
-      />
+      <Header />
       <div className="flex flex-1">
         <DocumentEditor 
           ref={documentEditorRef}
@@ -40,6 +37,7 @@ const Index = () => {
             onInsertWithHighlight: documentEditorRef.current?.insertWithHighlight
           }}
           uploadedDocuments={uploadedDocuments}
+          onDocumentsChange={setUploadedDocuments}
         />
         <ReaderReactions />
       </div>
