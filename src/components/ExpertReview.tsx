@@ -3,39 +3,74 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ExpertComment from './ExpertComment';
+import DocumentUpload from './DocumentUpload';
+import { useState } from 'react';
+
+interface UploadedDocument {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  content: string;
+  uploadedAt: Date;
+}
 
 const ExpertReview = () => {
-  const expertComments = [
-    {
-      name: "Steven Pinker",
-      role: "Lead with a vivid, concrete snapshot",
-      avatar: "SP",
-      color: "bg-blue-500",
-      suggestion: "Your essay is well-structured and clearly connects weightlifting to soccer performance; enriching it with concrete data, vivid examples, and holistic context will deepen credibility and reader engagement."
-    },
-    {
-      name: "Mike Boyle",
-      role: "Tie lifts to measurable soccer metrics",
-      avatar: "MB",
-      color: "bg-green-500",
-      suggestion: "Consider adding specific percentages of improvement in sprint times, jump heights, or injury reduction rates to strengthen your arguments with quantifiable evidence."
-    },
-    {
-      name: "Stuart McGill",
-      role: "Professor of spine biomechanics and author of 'Back Mechanic: The Step-by-Step McGill Method to Fix Back Pain'",
-      avatar: "SM",
-      color: "bg-expert-accent",
-      suggestion: "Excellent point on core stability and trunk stiffness. You might expand on the specific exercises that enhance this quality while avoiding spine-compromising movements."
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+
+  const getContextualComments = () => {
+    const baseComments = [
+      {
+        name: "Steven Pinker",
+        role: "Lead with a vivid, concrete snapshot",
+        avatar: "SP",
+        color: "bg-blue-500",
+        suggestion: "Your essay is well-structured and clearly connects weightlifting to soccer performance; enriching it with concrete data, vivid examples, and holistic context will deepen credibility and reader engagement."
+      },
+      {
+        name: "Mike Boyle",
+        role: "Tie lifts to measurable soccer metrics",
+        avatar: "MB",
+        color: "bg-green-500",
+        suggestion: "Consider adding specific percentages of improvement in sprint times, jump heights, or injury reduction rates to strengthen your arguments with quantifiable evidence."
+      },
+      {
+        name: "Stuart McGill",
+        role: "Professor of spine biomechanics and author of 'Back Mechanic: The Step-by-Step McGill Method to Fix Back Pain'",
+        avatar: "SM",
+        color: "bg-expert-accent",
+        suggestion: "Excellent point on core stability and trunk stiffness. You might expand on the specific exercises that enhance this quality while avoiding spine-compromising movements."
+      }
+    ];
+
+    // Add contextual comments based on uploaded documents
+    if (uploadedDocuments.length > 0) {
+      const contextualComments = uploadedDocuments.map(doc => ({
+        name: "AI Context",
+        role: `Based on ${doc.name}`,
+        avatar: "AI",
+        color: "bg-purple-500",
+        suggestion: `Drawing from your uploaded materials in "${doc.name}", consider incorporating the specific methodologies and findings mentioned to strengthen your argument about weightlifting's impact on soccer performance.`
+      }));
+      return [...baseComments, ...contextualComments];
     }
-  ];
+
+    return baseComments;
+  };
+
+  const expertComments = getContextualComments();
 
   const suggestions = [
     "Add statistical data on injury reduction",
-    "Include specific exercise protocols",
+    "Include specific exercise protocols", 
     "Reference recent meta-analyses",
     "Discuss periodization strategies",
     "Address potential contraindications",
-    "Compare with other training methods"
+    "Compare with other training methods",
+    ...(uploadedDocuments.length > 0 ? [
+      "Integrate findings from uploaded materials",
+      "Cross-reference with provided guidelines"
+    ] : [])
   ];
 
   return (
@@ -61,6 +96,9 @@ const ExpertReview = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Document Upload */}
+        <DocumentUpload onDocumentsChange={setUploadedDocuments} />
+
         {/* Main Feedback */}
         <div className="p-6 border-b border-border">
           <Card className="p-4 bg-suggestion-bg border-accent/20">
@@ -71,7 +109,9 @@ const ExpertReview = () => {
               <div>
                 <p className="text-sm font-medium text-accent mb-2">Overall Assessment</p>
                 <p className="text-sm leading-relaxed">
-                  Your essay demonstrates strong academic structure with clear connections between weightlifting and soccer performance. Consider adding quantitative data and specific training protocols to enhance credibility.
+                  Your essay demonstrates strong academic structure with clear connections between weightlifting and soccer performance. 
+                  {uploadedDocuments.length > 0 && " Based on your uploaded materials, "}
+                  Consider adding quantitative data and specific training protocols to enhance credibility.
                 </p>
               </div>
             </div>
@@ -98,7 +138,7 @@ const ExpertReview = () => {
               <Lightbulb className="h-4 w-4" />
               All suggestions
             </h3>
-            <Badge variant="secondary">6</Badge>
+            <Badge variant="secondary">{suggestions.length}</Badge>
           </div>
           <div className="space-y-2">
             {suggestions.map((suggestion, index) => (
