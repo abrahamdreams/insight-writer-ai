@@ -54,6 +54,15 @@ const ExpertReview = ({
   onRejectSuggestion,
   onPreviewSuggestion
 }: ExpertReviewProps) => {
+  
+  console.log('ExpertReview rendering with:', {
+    contentProps,
+    uploadedDocuments,
+    liveSuggestions,
+    onAcceptSuggestion: !!onAcceptSuggestion,
+    onRejectSuggestion: !!onRejectSuggestion,
+    onPreviewSuggestion: !!onPreviewSuggestion
+  });
 
   const getContextualComments = () => {
     const baseComments = [
@@ -111,7 +120,11 @@ const ExpertReview = ({
   ];
 
   return (
-    <div className="w-96 bg-sidebar-bg border-l border-border flex flex-col h-screen shadow-[var(--sidebar-shadow)]">
+    <div className="w-96 bg-card border-l border-border flex flex-col h-screen shadow-lg" style={{ backgroundColor: 'hsl(220, 14%, 98%)' }}>
+      {/* Debug info */}
+      <div className="p-2 bg-red-100 text-red-800 text-xs">
+        DEBUG: ExpertReview is rendering. Live suggestions: {liveSuggestions.length}
+      </div>
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between mb-4">
@@ -221,7 +234,7 @@ const ExpertReview = ({
 
         {/* Main Feedback */}
         <div className="p-6 border-b border-border">
-          <Card className="p-4 bg-suggestion-bg border-accent/20">
+          <Card className="p-4 bg-suggestion-background border-accent/20">
             <div className="flex items-start gap-3">
               <div className="p-2 bg-accent/10 rounded-full">
                 <Brain className="h-4 w-4 text-accent" />
