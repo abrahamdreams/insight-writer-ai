@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ExpertComment from './ExpertComment';
 import DocumentUpload from './DocumentUpload';
+import WritingAgents from './WritingAgents';
 import { useState } from 'react';
 
 interface UploadedDocument {
@@ -96,6 +97,9 @@ const ExpertReview = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Writing Agents */}
+        <WritingAgents />
+        
         {/* Document Upload */}
         <DocumentUpload onDocumentsChange={setUploadedDocuments} />
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FileText, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AIGrader from './AIGrader';
 
 const DocumentEditor = () => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
@@ -42,17 +43,21 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
         <div className="bg-card rounded-lg shadow-[var(--document-shadow)] min-h-[800px]">
           {/* Toolbar */}
           <div className="border-b border-border p-4">
-            <div className="flex items-center gap-2">
-              {formatOptions.map((option, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 hover:bg-muted"
-                >
-                  <option.icon className="h-4 w-4" />
-                </Button>
-              ))}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {formatOptions.map((option, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-muted"
+                  >
+                    <option.icon className="h-4 w-4" />
+                  </Button>
+                ))}
+              </div>
+              
+              <AIGrader essayContent={content} />
             </div>
           </div>
 
