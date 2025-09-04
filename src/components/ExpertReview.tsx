@@ -3,8 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ExpertComment from './ExpertComment';
-import WritingAgents from './WritingAgents';
-import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
 import ExpertReviewDocumentUpload from './ExpertReviewDocumentUpload';
 import UsageCounter from './UsageCounter';
@@ -217,12 +215,7 @@ const ExpertReview = ({
             />
           </div>
         )}
-        {/* Citation Finder */}
-        <CitationFinder />
-        
-        {/* Writing Agents */}
-        <WritingAgents />
-        
+
         {/* Main Feedback */}
         <div className="p-6 border-b border-border">
           <Card className="p-4 bg-suggestion-bg border-accent/20">
