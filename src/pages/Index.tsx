@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Header from '@/components/Header';
-import InteractiveEditor from '@/components/InteractiveEditor';
+import DocumentEditor from '@/components/DocumentEditor';
 import ExpertReview from '@/components/ExpertReview';
 import ReaderReactions from '@/components/ReaderReactions';
 import { FreemiumProvider } from '@/hooks/useFreemiumLimits';
@@ -51,7 +51,7 @@ const Index = () => {
         />
         
         <div className="flex flex-1 relative">
-          <InteractiveEditor 
+          <DocumentEditor 
             ref={documentEditorRef}
             onContentChange={handleContentChange}
           />

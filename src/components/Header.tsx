@@ -1,5 +1,6 @@
 import { FileText, Share, MoreHorizontal, Star, MessageSquare, DollarSign, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
 interface HeaderProps {
   documents?: any[];
   onDocumentsChange?: (documents: any[]) => void;
@@ -7,14 +8,10 @@ interface HeaderProps {
   onReaderReactionsClick?: () => void;
   showReaderReactions?: boolean;
 }
-const Header = ({
-  documents = [],
-  onDocumentsChange = () => {},
-  onPricingClick,
-  onReaderReactionsClick,
-  showReaderReactions
-}: HeaderProps) => {
-  return <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
+
+const Header = ({ documents = [], onDocumentsChange = () => {}, onPricingClick, onReaderReactionsClick, showReaderReactions }: HeaderProps) => {
+  return (
+    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
       {/* Left side - Document info */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
@@ -25,7 +22,12 @@ const Header = ({
 
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
-        <Button variant={showReaderReactions ? "default" : "ghost"} size="sm" className="gap-2" onClick={onReaderReactionsClick}>
+        <Button 
+          variant={showReaderReactions ? "default" : "ghost"} 
+          size="sm" 
+          className="gap-2" 
+          onClick={onReaderReactionsClick}
+        >
           <MessageCircle className="h-4 w-4" />
           Reader Reactions
         </Button>
@@ -33,7 +35,10 @@ const Header = ({
           <DollarSign className="h-4 w-4" />
           Pricing
         </Button>
-        
+        <Button variant="ghost" size="sm" className="gap-2">
+          <Star className="h-4 w-4" />
+          Get Pro
+        </Button>
         <Button variant="ghost" size="sm">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -42,6 +47,8 @@ const Header = ({
           Share
         </Button>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;
