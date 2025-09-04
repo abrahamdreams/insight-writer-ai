@@ -6,7 +6,7 @@ import ExpertReview from '@/components/ExpertReview';
 const Index = () => {
   const [documentContent, setDocumentContent] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
-  const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void } | null>(null);
+  const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
 
   const handleInsertText = (text: string) => {
     if (documentEditorRef.current) {
@@ -31,7 +31,8 @@ const Index = () => {
           contentProps={{
             content: documentContent,
             cursorPosition: cursorPosition,
-            onInsertText: handleInsertText
+            onInsertText: handleInsertText,
+            onInsertWithHighlight: documentEditorRef.current?.insertWithHighlight
           }}
         />
       </div>

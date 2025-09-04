@@ -8,9 +8,10 @@ interface ProactiveAssistantProps {
   content: string;
   cursorPosition: number;
   onInsertText?: (text: string) => void;
+  onInsertWithHighlight?: (text: string) => void;
 }
 
-const ProactiveAssistant = ({ content, cursorPosition, onInsertText }: ProactiveAssistantProps) => {
+const ProactiveAssistant = ({ content, cursorPosition, onInsertText, onInsertWithHighlight }: ProactiveAssistantProps) => {
   const { suggestions, currentSection, wordCount, isAnalyzing } = useContentAnalysis(content, cursorPosition);
 
   const getSuggestionIcon = (type: string) => {
@@ -33,11 +34,34 @@ const ProactiveAssistant = ({ content, cursorPosition, onInsertText }: Proactive
   };
 
   const handleSuggestionClick = (suggestion: any) => {
-    if (onInsertText && suggestion.type === 'citation') {
-      // Insert a placeholder citation
-      onInsertText(' (Author, Year)');
+    if (!onInsertWithHighlight) return;
+    
+    switch (suggestion.type) {
+      case 'citation':
+        onInsertWithHighlight(' (Smith et al., 2023)');
+        break;
+      case 'improvement':
+        if (suggestion.id === 'paragraph-length') {
+          onInsertWithHighlight('\n\n');
+        } else if (suggestion.id === 'intro-hook') {
+          onInsertWithHighlight('According to FIFA statistics, professional soccer players run an average of 10-12 kilometers per match. ');
+        }
+        break;
+      case 'clarification':
+        if (suggestion.id.includes('vague-many')) {
+          onInsertWithHighlight('approximately 75% of');
+        } else if (suggestion.id.includes('vague-most')) {
+          onInsertWithHighlight('over 80% of');
+        } else if (suggestion.id.includes('vague-some')) {
+          onInsertWithHighlight('35-40% of');
+        }
+        break;
+      case 'expansion':
+        if (suggestion.id === 'expansion-powerlifting') {
+          onInsertWithHighlight(' Unlike powerlifting, which focuses on maximal strength in three specific lifts, weightlifting for soccer emphasizes functional movement patterns and explosive power development.');
+        }
+        break;
     }
-    // Add more action handlers as needed
   };
 
   return (

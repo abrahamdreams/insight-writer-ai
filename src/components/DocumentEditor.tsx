@@ -12,11 +12,13 @@ interface DocumentEditorRef {
   getContent: () => string;
   getCursorPosition: () => number;
   insertText: (text: string) => void;
+  insertWithHighlight: (text: string) => void;
 }
 
 const DocumentEditor = forwardRef<DocumentEditorRef, DocumentEditorProps>(({ onContentChange }, ref) => {
   const [title, setTitle] = useState("The Effects of Weightlifting on Performance Athletes in Soccer");
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [showHighlight, setShowHighlight] = useState(false);
   const [content, setContent] = useState(`Introduction
 
 Soccer is a sport that necessitates a unique amalgamation of endurance, speed, agility, and strength. As the game has evolved, training methodologies have similarly advanced, with weightlifting emerging as an increasingly integral component in the development of elite soccer athletes. This essay examines the effects of weightlifting on performance athletes in soccer, analyzing its impact on physical capabilities, injury prevention, and on-field performance.
@@ -89,10 +91,32 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
     }
   };
 
+  const handleInsertWithHighlight = (text: string) => {
+    const textarea = contentRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + text + content.substring(end);
+      setContent(newContent);
+      setCursorPosition(start + text.length);
+      onContentChange?.(newContent, start + text.length);
+      
+      // Show highlight effect
+      setShowHighlight(true);
+      setTimeout(() => setShowHighlight(false), 1500);
+      
+      setTimeout(() => {
+        textarea.setSelectionRange(start + text.length, start + text.length);
+        textarea.focus();
+      }, 0);
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     getContent: () => content,
     getCursorPosition: () => cursorPosition,
-    insertText: handleInsertText
+    insertText: handleInsertText,
+    insertWithHighlight: handleInsertWithHighlight
   }));
 
   useEffect(() => {
@@ -158,7 +182,9 @@ The translation of gym gains to the soccer pitch is evident in various aspects o
                 setCursorPosition(newCursorPosition);
                 onContentChange?.(content, newCursorPosition);
               }}
-              className="w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide"
+              className={`w-full min-h-[600px] bg-transparent border-none outline-none resize-none leading-relaxed text-foreground font-[400] text-base tracking-wide transition-all duration-300 ${
+                showHighlight ? 'bg-highlight-bg/30' : ''
+              }`}
               placeholder="Start writing your document..."
               style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             />

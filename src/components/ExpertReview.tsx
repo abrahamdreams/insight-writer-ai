@@ -23,6 +23,7 @@ interface ExpertReviewProps {
     content?: string;
     cursorPosition?: number;
     onInsertText?: (text: string) => void;
+    onInsertWithHighlight?: (text: string) => void;
   };
 }
 
@@ -114,6 +115,7 @@ const ExpertReview = ({ contentProps }: ExpertReviewProps) => {
               content={contentProps.content}
               cursorPosition={contentProps.cursorPosition || 0}
               onInsertText={contentProps.onInsertText}
+              onInsertWithHighlight={contentProps.onInsertWithHighlight}
             />
           </div>
         )}

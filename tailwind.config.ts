@@ -58,6 +58,7 @@ export default {
 				'expert-accent': 'hsl(var(--expert-accent))',
 				'suggestion-bg': 'hsl(var(--suggestion-background))',
 				'comment-bg': 'hsl(var(--comment-background))',
+				'highlight-bg': 'hsl(var(--highlight-background))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
