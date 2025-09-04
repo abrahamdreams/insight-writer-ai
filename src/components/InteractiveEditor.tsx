@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DocumentEditor from './DocumentEditor';
-import InlineSuggestions from './InlineSuggestions';
 import TextAnalysisOverlay from './TextAnalysisOverlay';
 
 interface Suggestion {
@@ -15,10 +14,11 @@ interface Suggestion {
 
 interface InteractiveEditorProps {
   onContentChange?: (content: string, cursorPosition: number) => void;
+  onSuggestionsChange?: (suggestions: Suggestion[]) => void;
 }
 
 const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
-  ({ onContentChange }, ref) => {
+  ({ onContentChange, onSuggestionsChange }, ref) => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [currentContent, setCurrentContent] = useState('');
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -112,6 +112,7 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
       const timeoutId = setTimeout(() => {
         const newSuggestions = generateSuggestions(content, cursor);
         setSuggestions(newSuggestions);
+        onSuggestionsChange?.(newSuggestions);
       }, 1000);
 
       return () => clearTimeout(timeoutId);
@@ -123,19 +124,26 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
       }
       
       // Remove the accepted suggestion
-      setSuggestions(prev => prev.filter(s => s.id !== suggestionId));
+      const updatedSuggestions = suggestions.filter(s => s.id !== suggestionId);
+      setSuggestions(updatedSuggestions);
+      onSuggestionsChange?.(updatedSuggestions);
     };
 
     const handleRejectSuggestion = (suggestionId: string) => {
-      setSuggestions(prev => prev.filter(s => s.id !== suggestionId));
+      const updatedSuggestions = suggestions.filter(s => s.id !== suggestionId);
+      setSuggestions(updatedSuggestions);
+      onSuggestionsChange?.(updatedSuggestions);
     };
 
-    // Forward ref methods
+    // Expose methods for parent to access suggestions
     React.useImperativeHandle(ref, () => ({
       getContent: () => documentEditorRef.current?.getContent(),
       getCursorPosition: () => documentEditorRef.current?.getCursorPosition(),
       insertText: (text: string) => documentEditorRef.current?.insertText(text),
-      insertWithHighlight: (text: string) => documentEditorRef.current?.insertWithHighlight(text)
+      insertWithHighlight: (text: string) => documentEditorRef.current?.insertWithHighlight(text),
+      getSuggestions: () => suggestions,
+      acceptSuggestion: handleAcceptSuggestion,
+      rejectSuggestion: handleRejectSuggestion
     }));
 
     return (
@@ -143,13 +151,6 @@ const InteractiveEditor = React.forwardRef<any, InteractiveEditorProps>(
         <DocumentEditor
           ref={documentEditorRef}
           onContentChange={handleContentChange}
-        />
-        
-        <InlineSuggestions
-          suggestions={suggestions}
-          cursorPosition={cursorPosition}
-          onAccept={handleAcceptSuggestion}
-          onReject={handleRejectSuggestion}
         />
         
         <TextAnalysisOverlay

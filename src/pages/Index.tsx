@@ -16,7 +16,8 @@ const Index = () => {
   const [paywallTrigger, setPaywallTrigger] = useState<'ai-limit' | 'document-limit'>('ai-limit');
   const [showPricing, setShowPricing] = useState(false);
   const [showReaderReactions, setShowReaderReactions] = useState(false);
-  const documentEditorRef = useRef<{ getContent: () => string; getCursorPosition: () => number; insertText: (text: string) => void; insertWithHighlight: (text: string) => void } | null>(null);
+  const [liveSuggestions, setLiveSuggestions] = useState<any[]>([]);
+  const documentEditorRef = useRef<any>(null);
 
   const handleInsertText = (text: string) => {
     if (documentEditorRef.current) {
@@ -54,6 +55,7 @@ const Index = () => {
           <InteractiveEditor 
             ref={documentEditorRef}
             onContentChange={handleContentChange}
+            onSuggestionsChange={setLiveSuggestions}
           />
           <ExpertReview 
             contentProps={{
@@ -66,6 +68,9 @@ const Index = () => {
             uploadedDocuments={uploadedDocuments}
             onDocumentsChange={setUploadedDocuments}
             onPaywallTrigger={handlePaywallTrigger}
+            liveSuggestions={liveSuggestions}
+            onAcceptSuggestion={documentEditorRef.current?.acceptSuggestion}
+            onRejectSuggestion={documentEditorRef.current?.rejectSuggestion}
           />
           
           {/* Reader Reactions - Slide in from right */}

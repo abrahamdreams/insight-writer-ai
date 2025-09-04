@@ -1,4 +1,4 @@
-import { Brain, ChevronRight, Users, Lightbulb } from 'lucide-react';
+import { Brain, ChevronRight, Users, Lightbulb, CheckCircle, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,16 @@ interface UploadedDocument {
   uploadedAt: Date;
 }
 
+interface LiveSuggestion {
+  id: string;
+  type: 'expert' | 'citation' | 'improvement';
+  expert?: string;
+  text: string;
+  suggestion: string;
+  position: number;
+  confidence: number;
+}
+
 interface ExpertReviewProps {
   contentProps?: {
     content?: string;
@@ -30,9 +40,20 @@ interface ExpertReviewProps {
   uploadedDocuments?: any[];
   onDocumentsChange?: (documents: any[]) => void;
   onPaywallTrigger?: (trigger: 'ai-limit' | 'document-limit') => void;
+  liveSuggestions?: LiveSuggestion[];
+  onAcceptSuggestion?: (suggestionId: string, text: string) => void;
+  onRejectSuggestion?: (suggestionId: string) => void;
 }
 
-const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange = () => {}, onPaywallTrigger }: ExpertReviewProps) => {
+const ExpertReview = ({ 
+  contentProps, 
+  uploadedDocuments = [], 
+  onDocumentsChange = () => {}, 
+  onPaywallTrigger,
+  liveSuggestions = [],
+  onAcceptSuggestion,
+  onRejectSuggestion
+}: ExpertReviewProps) => {
 
   const getContextualComments = () => {
     const baseComments = [
@@ -126,6 +147,64 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Live Suggestions */}
+        {liveSuggestions.length > 0 && (
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="h-4 w-4 text-accent" />
+              <h3 className="font-medium text-sm">Live Suggestions</h3>
+              <Badge variant="secondary" className="text-xs">{liveSuggestions.length}</Badge>
+            </div>
+            <div className="space-y-3">
+              {liveSuggestions.slice(0, 3).map((suggestion) => {
+                const getExpertColor = (expert?: string) => {
+                  switch (expert) {
+                    case 'Steven Pinker': return 'bg-blue-500';
+                    case 'Mike Boyle': return 'bg-green-500';
+                    case 'Stuart McGill': return 'bg-expert-accent';
+                    default: return 'bg-accent';
+                  }
+                };
+
+                return (
+                  <div key={suggestion.id} className="bg-muted/30 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${getExpertColor(suggestion.expert)}`} />
+                      {suggestion.expert && (
+                        <Badge variant="outline" className="text-xs">{suggestion.expert}</Badge>
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {Math.round(suggestion.confidence * 100)}%
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {suggestion.suggestion}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => onAcceptSuggestion?.(suggestion.id, suggestion.text)}
+                        className="h-6 text-xs px-2"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onRejectSuggestion?.(suggestion.id)}
+                        className="h-6 text-xs px-2"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Proactive Assistant */}
         {contentProps?.content && (
           <div className="p-4 border-b border-border">
