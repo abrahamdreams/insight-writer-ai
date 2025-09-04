@@ -7,6 +7,7 @@ import WritingAgents from './WritingAgents';
 import CitationFinder from './CitationFinder';
 import ProactiveAssistant from './ProactiveAssistant';
 import ExpertReviewDocumentUpload from './ExpertReviewDocumentUpload';
+import UsageCounter from './UsageCounter';
 import { useState } from 'react';
 
 interface UploadedDocument {
@@ -92,13 +93,20 @@ const ExpertReview = ({ contentProps, uploadedDocuments = [], onDocumentsChange 
     <div className="w-96 bg-sidebar-bg border-l border-border flex flex-col h-screen shadow-[var(--sidebar-shadow)]">
       {/* Header */}
       <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-expert-accent/10 rounded-lg">
-            <Brain className="h-6 w-6 text-expert-accent" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-expert-accent/10 rounded-lg">
+              <Brain className="h-6 w-6 text-expert-accent" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">Expert Review</h2>
+              <p className="text-sm text-muted-foreground">AI-powered academic feedback</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold">Expert Review</h2>
-            <p className="text-sm text-muted-foreground">AI-powered academic feedback</p>
+          
+          {/* Compact Usage Counter in Expert Review Header */}
+          <div className="flex flex-col items-end gap-2">
+            <UsageCounter onUpgradeClick={onPaywallTrigger ? () => onPaywallTrigger('ai-limit') : () => {}} />
           </div>
         </div>
         

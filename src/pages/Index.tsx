@@ -50,13 +50,6 @@ const Index = () => {
           showReaderReactions={showReaderReactions}
         />
         
-        {/* Usage Counter */}
-        <div className="px-6 py-2 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <UsageCounter onUpgradeClick={() => setShowPricing(true)} />
-          </div>
-        </div>
-        
         <div className="flex flex-1 relative">
           <DocumentEditor 
             ref={documentEditorRef}
